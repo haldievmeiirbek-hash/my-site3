@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кері байланыс — Аудио & Мәтін</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .contact-wrapper { max-width: 700px; margin: 0 auto; }
+        .tab-bar { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 6px; gap: 6px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 600; transition: all 0.3s; background: transparent; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(124,106,247,0.35); }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+        .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 32px; }
+        .form-group { margin-bottom: 18px; }
+        .form-label { display: block; font-size: 0.72rem; font-family: 'Space Mono', monospace; color: var(--primary); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+        .form-input, .form-textarea, .form-select { width: 100%; padding: 13px 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 0.9rem; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.3s; box-sizing: border-box; }
+        .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--primary); }
+        .form-textarea { resize: vertical; min-height: 110px; }
+        .form-select option { background: var(--surface); }
+        .rating-row { display: flex; gap: 8px; }
+        .star-btn { font-size: 1.8rem; cursor: pointer; transition: transform 0.2s; filter: grayscale(1) opacity(0.4); background: none; border: none; line-height: 1; }
+        .star-btn.active { filter: none; transform: scale(1.15); }
+        .submit-btn { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 14px; cursor: pointer; font-size: 0.95rem; font-weight: 600; font-family: 'DM Sans', sans-serif; transition: all 0.3s; box-shadow: 0 6px 20px rgba(124,106,247,0.3); }
+        .submit-btn:hover { transform: translateY(-2px); }
+        .success-msg { display: none; background: rgba(74,247,176,0.1); border: 1px solid rgba(74,247,176,0.3); border-radius: 12px; padding: 16px; text-align: center; color: #4af7b0; margin-top: 14px; font-weight: 600; }
+        /* AUDIO */
+        .audio-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 32px; }
+        .mic-zone { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 36px 20px; border: 2px dashed var(--border); border-radius: 20px; margin-bottom: 24px; transition: all 0.3s; position: relative; overflow: hidden; }
+        .mic-zone.recording { border-color: #f74a6a; background: rgba(247,74,106,0.05); }
+        .mic-zone.has-recording { border-color: #4af7b0; background: rgba(74,247,176,0.05); }
+        .pulse-rings { position: absolute; inset: 0; pointer-events: none; display: none; }
+        .mic-zone.recording .pulse-rings { display: block; }
+        .pulse-ring { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border-radius: 50%; border: 2px solid rgba(247,74,106,0.3); animation: pulseRing 2s infinite; }
+        .pulse-ring:nth-child(1) { width: 120px; height: 120px; animation-delay: 0s; }
+        .pulse-ring:nth-child(2) { width: 180px; height: 180px; animation-delay: 0.4s; }
+        .pulse-ring:nth-child(3) { width: 240px; height: 240px; animation-delay: 0.8s; }
+        @keyframes pulseRing { 0% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.8); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); } }
+        .mic-btn { width: 90px; height: 90px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; transition: all 0.3s; position: relative; z-index: 1; }
+        .mic-btn.idle { background: linear-gradient(135deg, #7c6af7, #5a4fd4); box-shadow: 0 8px 30px rgba(124,106,247,0.4); }
+        .mic-btn.idle:hover { transform: scale(1.05); }
+        .mic-btn.recording { background: linear-gradient(135deg, #f74a6a, #c73452); box-shadow: 0 8px 30px rgba(247,74,106,0.5); animation: micPulse 1s infinite; }
+        @keyframes micPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+        .mic-status { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); text-align: center; z-index: 1; }
+        .timer { font-family: 'Space Mono', monospace; font-size: 1.4rem; font-weight: 700; color: #f74a6a; display: none; }
+        .waveform { display: flex; align-items: center; gap: 3px; height: 40px; z-index: 1; }
+        .wave-bar { width: 4px; background: #f74a6a; border-radius: 2px; animation: waveAnim 0.8s infinite; }
+        .wave-bar:nth-child(1){animation-delay:0s}.wave-bar:nth-child(2){animation-delay:0.1s}.wave-bar:nth-child(3){animation-delay:0.2s}.wave-bar:nth-child(4){animation-delay:0.3s}.wave-bar:nth-child(5){animation-delay:0.4s}.wave-bar:nth-child(6){animation-delay:0.3s}.wave-bar:nth-child(7){animation-delay:0.2s}.wave-bar:nth-child(8){animation-delay:0.1s}
+        @keyframes waveAnim { 0%, 100% { height: 8px; } 50% { height: 32px; } }
+        .playback-section { display: none; flex-direction: column; gap: 14px; }
+        .audio-info { display: flex; align-items: center; gap: 12px; background: rgba(74,247,176,0.08); border: 1px solid rgba(74,247,176,0.25); border-radius: 14px; padding: 14px 18px; }
+        .audio-title { font-weight: 600; font-size: 0.9rem; color: #4af7b0; margin-bottom: 2px; }
+        .audio-duration { font-size: 0.75rem; color: var(--text-muted); font-family: 'Space Mono', monospace; }
+        .audio-player { width: 100%; border-radius: 10px; accent-color: var(--primary); }
+        .playback-actions { display: flex; gap: 10px; }
+        .action-btn { flex: 1; padding: 11px; border-radius: 12px; border: 1px solid var(--border); cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; transition: all 0.3s; }
+        .btn-delete { background: rgba(247,74,106,0.1); color: #f74a6a; border-color: rgba(247,74,106,0.25); }
+        .btn-send { background: var(--primary); color: white; border-color: transparent; box-shadow: 0 4px 15px rgba(124,106,247,0.3); }
+        .audio-name-input { width: 100%; padding: 11px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; box-sizing: border-box; transition: border-color 0.3s; }
+        .audio-name-input:focus { border-color: var(--primary); }
+        .submissions-section { margin-top: 28px; }
+        .sub-title { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+        .sub-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 18px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; }
+        .sub-info { flex: 1; }
+        .sub-name { font-weight: 600; font-size: 0.875rem; color: var(--text); }
+        .sub-date { font-size: 0.72rem; color: var(--text-muted); font-family: 'Space Mono', monospace; }
+        .sub-type { font-size: 0.65rem; padding: 3px 8px; border-radius: 6px; font-family: 'Space Mono', monospace; }
+        .type-text { background: rgba(124,106,247,0.1); color: var(--primary); border: 1px solid rgba(124,106,247,0.2); }
+        .type-audio { background: rgba(74,247,176,0.1); color: #4af7b0; border: 1px solid rgba(74,247,176,0.2); }
+        .no-subs { text-align: center; color: var(--text-muted); font-size: 0.875rem; padding: 20px; }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    <button class="dark-mode-toggle" id="dark-mode-toggle"><span id="mode-icon">☀️</span></button>
+    <header>
+        <div class="header-badge">● 2 Режим</div>
+        <h1>Кері байланыс</h1>
+        <p>Мәтін немесе аудио арқылы хабарласыңыз</p>
+    </header>
+    <div class="container">
+        <div class="contact-wrapper">
+            <div class="tab-bar">
+                <button class="tab-btn active" onclick="switchTab('text', this)">✏️ Мәтін арқылы</button>
+                <button class="tab-btn" onclick="switchTab('audio', this)">🎙️ Аудио арқылы</button>
+            </div>
+            <!-- TEXT TAB -->
+            <div class="tab-panel active" id="tab-text">
+                <div class="form-card">
+                    <div class="form-group">
+                        <label class="form-label">Атыңыз</label>
+                        <input type="text" class="form-input" id="nameInput" placeholder="Аты-жөніңізді жазыңыз">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Хабарлама түрі</label>
+                        <select class="form-select" id="msgType">
+                            <option value="">Таңдаңыз...</option>
+                            <option value="question">❓ Сұрақ</option>
+                            <option value="suggestion">💡 Ұсыныс</option>
+                            <option value="bug">🐛 Қате тапқанмын</option>
+                            <option value="praise">⭐ Мақтау</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Сабаққа баға</label>
+                        <div class="rating-row" id="ratingRow">
+                            <button class="star-btn" onclick="setRating(1)">⭐</button>
+                            <button class="star-btn" onclick="setRating(2)">⭐</button>
+                            <button class="star-btn" onclick="setRating(3)">⭐</button>
+                            <button class="star-btn" onclick="setRating(4)">⭐</button>
+                            <button class="star-btn" onclick="setRating(5)">⭐</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Хабарлама</label>
+                        <textarea class="form-textarea" id="msgInput" placeholder="Сұрағыңыз немесе ұсынысыңыз..."></textarea>
+                    </div>
+                    <button class="submit-btn" onclick="sendText()">Жіберу →</button>
+                    <div class="success-msg" id="textSuccess">✓ Хабарламаңыз жіберілді! Рахмет!</div>
+                </div>
+            </div>
+            <!-- AUDIO TAB -->
+            <div class="tab-panel" id="tab-audio">
+                <div class="audio-card">
+                    <div class="mic-zone" id="micZone">
+                        <div class="pulse-rings">
+                            <div class="pulse-ring"></div>
+                            <div class="pulse-ring"></div>
+                            <div class="pulse-ring"></div>
+                        </div>
+                        <button class="mic-btn idle" id="micBtn" onclick="toggleRecording()">🎙️</button>
+                        <div class="mic-status" id="micStatus">Басыңыз — жазу басталады</div>
+                        <div class="timer" id="timer">00:00</div>
+                        <div class="waveform" id="waveform" style="display:none;">
+                            <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+                            <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+                            <div class="wave-bar"></div><div class="wave-bar"></div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:16px;">
+                        <label class="form-label" style="font-size:0.72rem;font-family:'Space Mono',monospace;color:var(--primary);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:8px;">Атыңыз</label>
+                        <input type="text" class="audio-name-input" id="audioName" placeholder="Аты-жөніңізді жазыңыз">
+                    </div>
+                    <div class="playback-section" id="playbackSection">
+                        <div class="audio-info">
+                            <div style="font-size:1.5rem;">🎵</div>
+                            <div style="flex:1;">
+                                <div class="audio-title">Аудио жазылды</div>
+                                <div class="audio-duration" id="audioDurationText">Ұзақтығы: 0 сек</div>
+                            </div>
+                        </div>
+                        <audio class="audio-player" id="audioPlayer" controls></audio>
+                        <div class="playback-actions">
+                            <button class="action-btn btn-delete" onclick="deleteRecording()">🗑️ Өшіру</button>
+                            <button class="action-btn btn-send" onclick="sendAudio()">📤 Жіберу</button>
+                        </div>
+                    </div>
+                    <div class="success-msg" id="audioSuccess" style="margin-top:14px;">✓ Аудио хабарламаңыз жіберілді! Рахмет!</div>
+                    <div style="margin-top:20px;padding:14px;background:rgba(124,106,247,0.06);border:1px solid rgba(124,106,247,0.15);border-radius:12px;font-size:0.8rem;color:var(--text-muted);line-height:1.6;">
+                        <strong style="color:var(--primary);">ℹ️ Нұсқаулық:</strong> Микрофон батырмасын басыңыз → сөйлеңіз → тоқтату үшін қайта басыңыз → аудионы тыңдап, жіберіңіз.
+                    </div>
+                </div>
+            </div>
+            <!-- Submissions -->
+            <div class="submissions-section">
+                <div class="sub-title">Соңғы жіберілгендер</div>
+                <div id="submissionsList"><div class="no-subs">Әзірге хабарлама жіберілмеген</div></div>
+            </div>
+            <div style="text-align:center;margin-top:28px;">
+                <a href="index.html" class="back-btn">← Басты бетке қайту</a>
+            </div>
+        </div>
+    </div>
+    <script>
+        function switchTab(name, btn) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            btn.classList.add('active');
+        }
+        let rating = 0;
+        function setRating(n) {
+            rating = n;
+            document.querySelectorAll('.star-btn').forEach((btn, i) => btn.classList.toggle('active', i < n));
+        }
+        let submissions = [];
+        function sendText() {
+            const name = document.getElementById('nameInput').value.trim();
+            const msg = document.getElementById('msgInput').value.trim();
+            if (!name || !msg) { alert('Атыңыз бен хабарламаны толтырыңыз!'); return; }
+            submissions.unshift({ type: 'text', name, msg, rating, date: new Date().toLocaleString('kk-KZ') });
+            renderSubmissions();
+            document.getElementById('textSuccess').style.display = 'block';
+            document.getElementById('nameInput').value = '';
+            document.getElementById('msgInput').value = '';
+            document.getElementById('msgType').value = '';
+            setRating(0);
+            setTimeout(() => document.getElementById('textSuccess').style.display = 'none', 4000);
+        }
+        let mediaRecorder = null, audioChunks = [], recordingInterval = null, recordingSeconds = 0, audioBlob = null;
+        async function toggleRecording() {
+            if (!mediaRecorder || mediaRecorder.state === 'inactive') { await startRecording(); }
+            else { stopRecording(); }
+        }
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = []; recordingSeconds = 0;
+                mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+                mediaRecorder.onstop = () => {
+                    audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    document.getElementById('audioPlayer').src = URL.createObjectURL(audioBlob);
+                    document.getElementById('audioDurationText').textContent = 'Ұзақтығы: ' + recordingSeconds + ' сек';
+                    const ps = document.getElementById('playbackSection');
+                    ps.style.display = 'flex'; ps.style.flexDirection = 'column'; ps.style.gap = '14px';
+                    stream.getTracks().forEach(t => t.stop());
+                };
+                mediaRecorder.start(100);
+                document.getElementById('micBtn').className = 'mic-btn recording';
+                document.getElementById('micBtn').textContent = '⏹';
+                document.getElementById('micZone').classList.add('recording');
+                document.getElementById('micStatus').textContent = 'Жазылуда... Тоқтату үшін басыңыз';
+                document.getElementById('timer').style.display = 'block';
+                document.getElementById('waveform').style.display = 'flex';
+                document.getElementById('playbackSection').style.display = 'none';
+                recordingInterval = setInterval(() => {
+                    recordingSeconds++;
+                    const m = String(Math.floor(recordingSeconds / 60)).padStart(2, '0');
+                    const s = String(recordingSeconds % 60).padStart(2, '0');
+                    document.getElementById('timer').textContent = m + ':' + s;
+                    if (recordingSeconds >= 120) stopRecording();
+                }, 1000);
+            } catch (err) { alert('Микрофонға рұқсат берілмеді. Браузер баптауларынан рұқсат беріңіз.'); }
+        }
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+            clearInterval(recordingInterval);
+            document.getElementById('micBtn').className = 'mic-btn idle';
+            document.getElementById('micBtn').textContent = '🎙️';
+            document.getElementById('micZone').classList.remove('recording');
+            document.getElementById('micZone').classList.add('has-recording');
+            document.getElementById('micStatus').textContent = '✓ Аудио дайын — тыңдап, жіберіңіз';
+            document.getElementById('timer').style.display = 'none';
+            document.getElementById('waveform').style.display = 'none';
+        }
+        function deleteRecording() {
+            audioBlob = null; audioChunks = [];
+            document.getElementById('audioPlayer').src = '';
+            document.getElementById('playbackSection').style.display = 'none';
+            document.getElementById('micZone').classList.remove('has-recording');
+            document.getElementById('micStatus').textContent = 'Басыңыз — жазу басталады';
+        }
+        function sendAudio() {
+            if (!audioBlob) { alert('Алдымен аудио жазыңыз!'); return; }
+            const name = document.getElementById('audioName').value.trim() || 'Аты белгісіз';
+            submissions.unshift({ type: 'audio', name, date: new Date().toLocaleString('kk-KZ'), duration: recordingSeconds });
+            renderSubmissions();
+            document.getElementById('audioSuccess').style.display = 'block';
+            deleteRecording();
+            document.getElementById('audioName').value = '';
+            setTimeout(() => document.getElementById('audioSuccess').style.display = 'none', 4000);
+        }
+        function renderSubmissions() {
+            const list = document.getElementById('submissionsList');
+            if (submissions.length === 0) { list.innerHTML = '<div class="no-subs">Әзірге хабарлама жіберілмеген</div>'; return; }
+            list.innerHTML = submissions.map(s => `
+                <div class="sub-card">
+                    <div style="font-size:1.2rem;">${s.type === 'audio' ? '🎙️' : '✉️'}</div>
+                    <div class="sub-info">
+                        <div class="sub-name">${s.name}${s.rating ? ' ' + '⭐'.repeat(s.rating) : ''}</div>
+                        <div class="sub-date">${s.date}${s.duration ? ' · ' + s.duration + ' сек' : ''}</div>
+                    </div>
+                    <span class="sub-type ${s.type === 'audio' ? 'type-audio' : 'type-text'}">${s.type === 'audio' ? 'АУДИО' : 'МӘТІН'}</span>
+                </div>`).join('');
+        }
+        const toggleBtn = document.getElementById('dark-mode-toggle');
+        const modeIcon = document.getElementById('mode-icon');
+        const body = document.body;
+        if (localStorage.getItem('dark-mode') !== 'disabled') { modeIcon.textContent = '☀️'; }
+        else { body.classList.add('light-mode'); modeIcon.textContent = '🌙'; }
+        toggleBtn.addEventListener('click', () => {
+            body.classList.toggle('light-mode');
+            if (body.classList.contains('light-mode')) { localStorage.setItem('dark-mode', 'disabled'); modeIcon.textContent = '🌙'; }
+            else { localStorage.setItem('dark-mode', 'enabled'); modeIcon.textContent = '☀️'; }
+        });
+        renderSubmissions();
+    </script>
+<script src="accessibility.js"></script>
+</body>
+</html>

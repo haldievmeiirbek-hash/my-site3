@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ — Жиі қойылатын сұрақтар</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .faq-wrap { max-width: 780px; margin: 0 auto; }
+        .faq-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            transition: border-color 0.3s;
+        }
+        .faq-item.open { border-color: rgba(124,106,247,0.4); }
+        .faq-q {
+            padding: 20px 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            gap: 16px;
+            user-select: none;
+        }
+        .faq-q:hover { background: rgba(124,106,247,0.04); }
+        .faq-q-text { font-weight: 600; font-size: 0.92rem; color: var(--text); }
+        .faq-icon {
+            width: 28px; height: 28px;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+        .faq-item.open .faq-icon { background: var(--primary); border-color: var(--primary); color: white; transform: rotate(45deg); }
+        .faq-a {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+            padding: 0 22px;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+        .faq-item.open .faq-a { max-height: 400px; padding: 0 22px 20px; }
+        .faq-a code { font-size: 0.8rem; margin: 8px 0; }
+        .cat-label { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--primary); letter-spacing: 2px; text-transform: uppercase; margin: 28px 0 12px; }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    <nav class="navbar">
+        <a href="index.html" class="nav-logo">🐍 PyLearn KZ</a>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Басты бет</a>
+            <a href="sabaq.html" class="nav-link">Сабақ</a>
+            <a href="chatbot.html" class="nav-link highlight">🤖 AI Чат</a>
+            <a href="blog.html" class="nav-link">Блог</a>
+            <a href="faq.html" class="nav-link active">FAQ</a>
+            <a href="reviews.html" class="nav-link">Пікірлер</a>
+            <a href="contact.html" class="nav-link">Байланыс</a>
+        </div>
+        <div class="nav-right">
+            <button class="dark-mode-toggle" id="dark-mode-toggle"><span id="mode-icon">☀️</span></button>
+            <button class="hamburger" onclick="document.getElementById('mobileMenu').classList.toggle('open')">☰</button>
+        </div>
+    </nav>
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="index.html" class="nav-link">Басты бет</a>
+        <a href="chatbot.html" class="nav-link highlight">🤖 AI Чат</a>
+        <a href="blog.html" class="nav-link">Блог</a>
+        <a href="faq.html" class="nav-link active">FAQ</a>
+    </div>
+
+    <header>
+        <div class="header-badge">● 15 Сұрақ</div>
+        <h1>Жиі қойылатын сұрақтар</h1>
+        <p>Жауапты таба алмасаңыз — AI Чатқа сұраңыз</p>
+    </header>
+
+    <div class="container">
+        <div class="faq-wrap">
+            <div class="cat-label">🐍 Python негіздері</div>
+
+            <div class="faq-item" onclick="toggle(this)">
+                <div class="faq-q"><span class="faq-q-text">Python-ды қайдан жүктеуге болады?</span><div class="faq-icon">+</div></div>
+                <div class="faq-a">Python-ды ресми сайттан тегін жүктей аласыз: <strong>python.org/downloads</strong>. Windows, Mac, Linux нұсқалары бар. 7-сыныпта IDLE немесе VS Code редакторын пайдалануды ұсынамыз.</div>
+            </div>
+            <div class="faq-item" onclick="toggle(this)">
+                <div class="faq-q"><span class="faq-q-text">Python-да қателер неліктен пайда болады?</span><div class="faq-icon">+</div></div>
+                <div class="faq-a">Қателер — программалаудың қалыпты бөлігі! Ең жиі себептер: 1) тырнақша немесе жақша жабылмаған, 2) айнымалы анықталмаған, 3) деректер типі сәйкес емес. Қате хабарламасын мұқият оқыңыз — Python қандай жолда екенін нақты айтады.<code>print("Сәлем"  # ← осы жолда қате бар — жақша жабылмаған</code></div>
+            </div>
+            <div class="faq-item" onclick="toggle(this)">
+                <div class="faq-q"><span class="faq-q-text">Python-да қазақша мәтін жазуға бола ма?</span><div class="faq-icon">+</div></div>
+                <div class="faq-a">Иә! Python 3-тен бастап Unicode толық қолдайды. Айнымалы атауларда және print-та қазақша кирилл жазуын пайдалануға болады. <code>аты = input("Атыңызды енгізіңіз: ")
+print("Сәлем, " + аты + "!")</code></div>
+            </div>
+            <div class="faq-item" onclick="toggle(this)">
+                <div class="faq-q"><span class="faq-q-text">while мен for цикл айырмашылығы қандай?</span><div class="faq-icon">+</div></div>
+                <div class="faq-a"><strong>for</strong> — қайталану саны алдын ала белгілі болғанда (1-ден 10-ға дейін).<br><strong>while</strong> — белгілі бір шарт орындалғанша жалғасады (пайдаланушы "шығу" деп теркенше).<code>for i in range(5):  # дәл 5 рет
+    print(i)
+
+n = 0
+while n < 5:        # n < 5 болғанда
+    print(n)
+    n += 1</code></div>
+            </div>
+            <div class="faq-item" onclick="toggle(this)">
+                <div class="faq-q"><span class="faq-q-text">input() функциясы қандай типте мән қайтарады?</span><div class="faq-icon">+</div></div>
+                <div class="faq-a">input() функциясы БАРЛЫҚ уақытта <strong>str</strong> (жол) типінде мән қайтарады. Сан керек болса, int() немесе float() арқылы түрлендіру керек.<code>аты = input("Аты: ")       # str
+жас = int(input("Жас: "))   # int-ке түрлендіру</code></div>
+            </div>
+
+            <div class="cat-label">📘 Сабақ пен тапсырма</div>
+
+            <div class="faq-item" onclick="toggle(this)">
+                <div class="faq-q"><span class="faq-q-text">Тапсырмаларды орындай алмасам не істеймін?</span><div class="faq-icon">+</div></div>
+                <div class="faq-a">Алдымен сабақ материалдарын қайталаңыз. Содан кейін AI Чатботқа сұрақ қойыңыз — ол түсіндіріп береді. Жауабын тікелей бермейді, бірақ дұрыс бағытты нұсқайды.</div>
+            </div>
+            <div class="faq-item" onclick="toggle(this)">
+                <div class="faq-q"><span class="faq-q-text">Тест нәтижелерім сақтала ма?</span><div class="faq-icon">+</div></div>
+                <div class="faq-a">Қазіргі уақытта тест нәтижелері сессия аяқталғанша браузерде сақталады. Бетті жабсаңыз, нәтижелер тазаланады. Нәтижеңізді screenshot-пен сақтауды ұсынамыз.</div>
+            </div>
+            <div class="faq-item" onclick="toggle(this)">
+                <div class="faq-q"><span class="faq-q-text">Код редактор нені жасайды?</span><div class="faq-icon">+</div></div>
+                <div class="faq-a">Браузердегі код редактор Python кодын жазып, нәтижесін тікелей көруге мүмкіндік береді. Python орнатудың қажеті жоқ — тікелей браузерден жұмыс істейді!</div>
+            </div>
+
+            <div class="cat-label">🤖 AI Чатбот</div>
+
+            <div class="faq-item" onclick="toggle(this)">
+                <div class="faq-q"><span class="faq-q-text">AI Чатбот қандай сұрақтарға жауап береді?</span><div class="faq-icon">+</div></div>
+                <div class="faq-a">Чатбот Python программалауы туралы сұрақтарға жауап береді: синтаксис, алгоритмдер, функциялар, тапсырмаларды шешу жолдары, қателерді түзету. Барлық жауаптар қазақ тілінде, 7-сынып деңгейінде беріледі.</div>
+            </div>
+            <div class="faq-item" onclick="toggle(this)">
+                <div class="faq-q"><span class="faq-q-text">AI дайын кодты бере ма?</span><div class="faq-icon">+</div></div>
+                <div class="faq-a">AI тапсырмаларды бірден шешіп бермейді — оқу мақсатында сізге бағыт береді, мысалдар көрсетеді, түсіндіреді. Мақсат — өзіңіз код жазуды үйрену!</div>
+            </div>
+
+            <div class="cat-label">💬 Кері байланыс</div>
+
+            <div class="faq-item" onclick="toggle(this)">
+                <div class="faq-q"><span class="faq-q-text">Аудио хабарлама жіберу үшін не керек?</span><div class="faq-icon">+</div></div>
+                <div class="faq-a">Аудио хабарлама жіберу үшін: 1) Кері байланыс бетіне өтіңіз, 2) "Аудио арқылы" қойынды таңдаңыз, 3) Браузер микрофонға рұқсат сұрайды — рұқсат беріңіз, 4) Батырманы басып сөйлеңіз. Chrome немесе Firefox браузерін пайдалануды ұсынамыз.</div>
+            </div>
+            <div class="faq-item" onclick="toggle(this)">
+                <div class="faq-q"><span class="faq-q-text">Сайт телефонда жұмыс істей ме?</span><div class="faq-icon">+</div></div>
+                <div class="faq-a">Иә! Сайт мобильді-дос (responsive) дизайнмен жасалған. Барлық мүмкіндіктер — тест, ойын, чатбот, аудио — телефон арқылы да жұмыс істейді. Chrome мобильді браузерін ұсынамыз.</div>
+            </div>
+            <div class="faq-item" onclick="toggle(this)">
+                <div class="faq-q"><span class="faq-q-text">Сайтта тіл ауыстыру мүмкіндігі бар ма?</span><div class="faq-icon">+</div></div>
+                <div class="faq-a">Иә! Навигация панелінің оң жағындағы 🌐 батырмасын басып, Қазақша / Русский / English тілдерін таңдай аласыз. Таңдау автоматты түрде барлық мәтінге қолданылады.</div>
+            </div>
+
+            <div style="text-align:center;margin-top:36px;padding-top:24px;border-top:1px solid var(--border);">
+                <p style="color:var(--text-muted);font-size:0.875rem;margin-bottom:16px;">Жауап таба алмадыңыз ба?</p>
+                <a href="chatbot.html" class="btn-primary" style="display:inline-flex;align-items:center;gap:8px;background:var(--primary);color:white;padding:12px 28px;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.875rem;box-shadow:0 6px 20px rgba(124,106,247,0.35);">🤖 AI Чатқа сұраңыз</a>
+                &nbsp;&nbsp;
+                <a href="contact.html" class="back-btn" style="margin-top:0;">Байланыс →</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function toggle(el) {
+        el.classList.toggle('open');
+        const others = document.querySelectorAll('.faq-item.open');
+        others.forEach(o => { if (o !== el) o.classList.remove('open'); });
+    }
+    const toggleBtn = document.getElementById('dark-mode-toggle');
+    const modeIcon = document.getElementById('mode-icon');
+    const body = document.body;
+    if (localStorage.getItem('dark-mode') !== 'disabled') { modeIcon.textContent = '☀️'; }
+    else { body.classList.add('light-mode'); modeIcon.textContent = '🌙'; }
+    toggleBtn.addEventListener('click', () => {
+        body.classList.toggle('light-mode');
+        if (body.classList.contains('light-mode')) { localStorage.setItem('dark-mode', 'disabled'); modeIcon.textContent = '🌙'; }
+        else { localStorage.setItem('dark-mode', 'enabled'); modeIcon.textContent = '☀️'; }
+    });
+    </script>
+<script src="accessibility.js"></script>
+</body>
+</html>

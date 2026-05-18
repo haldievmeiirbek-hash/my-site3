@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оқу жоспары</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .curr-wrapper { max-width: 700px; margin: 0 auto; }
+        .topic-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s;
+            cursor: default;
+        }
+        .topic-card:hover {
+            transform: translateX(8px);
+            border-color: rgba(124,106,247,0.3);
+        }
+        .topic-num {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: var(--border);
+            min-width: 40px;
+            text-align: right;
+        }
+        .topic-info { flex: 1; }
+        .topic-title { font-weight: 600; color: var(--text); margin-bottom: 4px; }
+        .topic-sub { font-size: 0.8rem; color: var(--text-muted); }
+        .topic-status {
+            font-size: 0.7rem;
+            font-family: 'Space Mono', monospace;
+            padding: 4px 10px;
+            border-radius: 6px;
+            letter-spacing: 1px;
+        }
+        .status-done { background: rgba(74,247,176,0.1); color: #4af7b0; border: 1px solid rgba(74,247,176,0.3); }
+        .status-now { background: rgba(124,106,247,0.1); color: var(--primary); border: 1px solid rgba(124,106,247,0.3); }
+        .status-next { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    <button class="dark-mode-toggle" id="dark-mode-toggle"><span id="mode-icon">☀️</span></button>
+    <header>
+        <div class="header-badge">● 5 Тақырып</div>
+        <h1>Оқу жоспары</h1>
+        <p>7-сынып Python бағдарламасы</p>
+    </header>
+    <div class="container">
+        <div class="curr-wrapper">
+            <div class="topic-card">
+                <div class="topic-num">01</div>
+                <div class="topic-info">
+                    <div class="topic-title">Кіріспе. Python орнату</div>
+                    <div class="topic-sub">Python дегеніміз не? · IDE орнату · Алғашқы бағдарлама</div>
+                </div>
+                <div class="topic-status status-done">✓ АЯҚТАЛДЫ</div>
+            </div>
+            <div class="topic-card">
+                <div class="topic-num">02</div>
+                <div class="topic-info">
+                    <div class="topic-title">Айнымалылар және деректер типтері</div>
+                    <div class="topic-sub">int · float · str · bool · type() функциясы</div>
+                </div>
+                <div class="topic-status status-done">✓ АЯҚТАЛДЫ</div>
+            </div>
+            <div class="topic-card">
+                <div class="topic-num">03</div>
+                <div class="topic-info">
+                    <div class="topic-title">Арифметикалық амалдар</div>
+                    <div class="topic-sub">+, -, *, /, //, %, ** · input/print · Есептер</div>
+                </div>
+                <div class="topic-status status-now">▶ ҚАЗІР</div>
+            </div>
+            <div class="topic-card">
+                <div class="topic-num">04</div>
+                <div class="topic-info">
+                    <div class="topic-title">Тармақталу операторлары</div>
+                    <div class="topic-sub">if · elif · else · Салыстыру операторлары</div>
+                </div>
+                <div class="topic-status status-next">КЕЛЕСІ</div>
+            </div>
+            <div class="topic-card">
+                <div class="topic-num">05</div>
+                <div class="topic-info">
+                    <div class="topic-title">Циклдер</div>
+                    <div class="topic-sub">for · while · range() · break · continue</div>
+                </div>
+                <div class="topic-status status-next">КЕЛЕСІ</div>
+            </div>
+            <div style="text-align:center; margin-top:32px;">
+                <a href="index.html" class="back-btn">← Басты бетке қайту</a>
+            </div>
+        </div>
+    </div>
+    <script>
+        const toggleBtn = document.getElementById('dark-mode-toggle');
+        const modeIcon = document.getElementById('mode-icon');
+        const body = document.body;
+        if (localStorage.getItem('dark-mode') !== 'disabled') { modeIcon.textContent = '☀️'; }
+        else { body.classList.add('light-mode'); modeIcon.textContent = '🌙'; }
+        toggleBtn.addEventListener('click', () => {
+            body.classList.toggle('light-mode');
+            if (body.classList.contains('light-mode')) { localStorage.setItem('dark-mode', 'disabled'); modeIcon.textContent = '🌙'; }
+            else { localStorage.setItem('dark-mode', 'enabled'); modeIcon.textContent = '☀️'; }
+        });
+    </script>
+<script src="accessibility.js"></script>
+</body>
+</html>

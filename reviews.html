@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пікірлер — Оқушылардың бағалары</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .reviews-wrap{max-width:900px;margin:0 auto}
+        .rating-summary{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px;display:flex;align-items:center;gap:40px;margin-bottom:24px;flex-wrap:wrap}
+        .big-rating{text-align:center;flex-shrink:0}
+        .big-num{font-family:'Unbounded',sans-serif;font-size:4.5rem;font-weight:900;background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+        .big-stars{font-size:1.4rem;margin:6px 0 4px}
+        .big-count{font-size:.75rem;color:var(--text-muted);font-family:'Space Mono',monospace}
+        .rating-bars{flex:1;min-width:200px}
+        .bar-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+        .bar-label{font-size:.78rem;color:var(--text-muted);width:16px;text-align:right;font-family:'Space Mono',monospace}
+        .bar-track{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+        .bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--primary),var(--accent))}
+        .bar-pct{font-size:.72rem;color:var(--text-muted);width:36px;text-align:right;font-family:'Space Mono',monospace}
+        .reviews-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px}
+        @media(max-width:640px){.reviews-grid{grid-template-columns:1fr}.rating-summary{flex-direction:column}}
+        .review-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;transition:all .3s;position:relative;overflow:hidden}
+        .review-card:hover{border-color:rgba(124,106,247,.3);transform:translateY(-4px)}
+        .review-card.new-review{border-color:rgba(74,247,176,.3);animation:fadeUp .4s ease}
+        .review-head{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+        .rev-avatar{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+        .rev-name{font-weight:700;font-size:.9rem;color:var(--text)}
+        .rev-date{font-size:.72rem;color:var(--text-muted);font-family:'Space Mono',monospace;margin-top:2px}
+        .rev-stars{font-size:1rem;margin-bottom:10px}
+        .rev-text{font-size:.85rem;color:var(--text-muted);line-height:1.6}
+        .rev-badge{display:inline-block;font-size:.65rem;padding:2px 8px;border-radius:50px;margin-top:10px;font-family:'Space Mono',monospace}
+        .add-review{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px}
+        .add-review h3{font-family:'Unbounded',sans-serif;font-size:.95rem;margin-bottom:18px}
+        .star-select{display:flex;gap:8px;margin-bottom:16px}
+        .star-s{font-size:2rem;cursor:pointer;filter:grayscale(1) opacity(.4);transition:all .2s;border:none;background:none}
+        .star-s.on{filter:none;transform:scale(1.15)}
+        .r-input{width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;margin-bottom:12px;box-sizing:border-box;transition:border-color .3s}
+        .r-input:focus{border-color:var(--primary)}
+        .r-textarea{resize:vertical;min-height:90px}
+        .r-btn{padding:12px 28px;background:var(--primary);color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:600;font-size:.88rem;font-family:'DM Sans',sans-serif;transition:all .3s;box-shadow:0 4px 14px rgba(124,106,247,.3)}
+        .r-btn:hover{transform:translateY(-2px)}
+        .r-success{display:none;margin-top:12px;padding:12px;background:rgba(74,247,176,.1);border:1px solid rgba(74,247,176,.3);border-radius:10px;text-align:center;color:#4af7b0;font-weight:600;font-size:.875rem}
+        .storage-badge{font-size:.65rem;background:rgba(74,247,176,.1);color:#4af7b0;border:1px solid rgba(74,247,176,.2);padding:3px 8px;border-radius:50px;font-family:'Space Mono',monospace;margin-left:8px}
+        .loading-msg{text-align:center;color:var(--text-muted);font-size:.85rem;padding:20px;font-style:italic}
+    </style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<nav class="navbar">
+    <a href="index.html" class="nav-logo">🐍 PyLearn KZ</a>
+    <div class="nav-links">
+        <a href="index.html" class="nav-link">Басты бет</a>
+        <a href="chatbot.html" class="nav-link highlight">🤖 AI Чат</a>
+        <a href="blog.html" class="nav-link">Блог</a>
+        <a href="faq.html" class="nav-link">FAQ</a>
+        <a href="reviews.html" class="nav-link active">Пікірлер</a>
+        <a href="contact.html" class="nav-link">Байланыс</a>
+    </div>
+    <div class="nav-right">
+        <button class="dark-mode-toggle" id="dmt"><span id="mi">☀️</span></button>
+        <button class="hamburger" onclick="document.getElementById('mm').classList.toggle('open')">☰</button>
+    </div>
+</nav>
+<div class="mobile-menu" id="mm">
+    <a href="index.html" class="nav-link">Басты бет</a>
+    <a href="reviews.html" class="nav-link active">Пікірлер</a>
+</div>
+
+<header>
+    <div class="header-badge">● Оқушы пікірлері · Деректер базасында сақталады</div>
+    <h1>Пікірлер & Бағалар</h1>
+    <p>Оқушылардың нақты пікірлері</p>
+</header>
+
+<div class="container">
+<div class="reviews-wrap">
+    <div class="rating-summary">
+        <div class="big-rating">
+            <div class="big-num" id="avgRating">4.8</div>
+            <div class="big-stars">⭐⭐⭐⭐⭐</div>
+            <div class="big-count" id="totalCount">Жүктелуде...</div>
+        </div>
+        <div class="rating-bars">
+            <div class="bar-row"><span class="bar-label">5</span><div class="bar-track"><div class="bar-fill" id="bar5" style="width:0%"></div></div><span class="bar-pct" id="pct5">—</span></div>
+            <div class="bar-row"><span class="bar-label">4</span><div class="bar-track"><div class="bar-fill" id="bar4" style="width:0%"></div></div><span class="bar-pct" id="pct4">—</span></div>
+            <div class="bar-row"><span class="bar-label">3</span><div class="bar-track"><div class="bar-fill" id="bar3" style="width:0%"></div></div><span class="bar-pct" id="pct3">—</span></div>
+            <div class="bar-row"><span class="bar-label">2</span><div class="bar-track"><div class="bar-fill" id="bar2" style="width:0%"></div></div><span class="bar-pct" id="pct2">—</span></div>
+            <div class="bar-row"><span class="bar-label">1</span><div class="bar-track"><div class="bar-fill" id="bar1" style="width:0%"></div></div><span class="bar-pct" id="pct1">—</span></div>
+        </div>
+    </div>
+
+    <div class="reviews-grid" id="reviewsGrid">
+        <div class="loading-msg" style="grid-column:1/-1">⏳ Пікірлер жүктелуде...</div>
+    </div>
+
+    <!-- ADD REVIEW FORM -->
+    <div class="add-review">
+        <h3>📝 Өз пікіріңізді қалдырыңыз <span class="storage-badge">💾 Сақталады</span></h3>
+        <div class="star-select" id="starSel">
+            <button class="star-s" onclick="setStar(1)">⭐</button>
+            <button class="star-s" onclick="setStar(2)">⭐</button>
+            <button class="star-s" onclick="setStar(3)">⭐</button>
+            <button class="star-s" onclick="setStar(4)">⭐</button>
+            <button class="star-s" onclick="setStar(5)">⭐</button>
+        </div>
+        <input type="text" class="r-input" id="rName" placeholder="Атыңыз" maxlength="30">
+        <textarea class="r-input r-textarea" id="rText" placeholder="Пікіріңізді жазыңыз..." maxlength="300"></textarea>
+        <button class="r-btn" onclick="addReview()">Жариялау →</button>
+        <div class="r-success" id="rSuccess">✓ Пікіріңіз жарияланды және сақталды! Рахмет!</div>
+    </div>
+
+    <div style="text-align:center;margin-top:28px">
+        <a href="index.html" class="back-btn">← Басты бетке қайту</a>
+    </div>
+</div>
+</div>
+
+<script>
+// Seed reviews (default)
+const SEED=[
+    {name:'Айгерім Б.',rating:5,text:'AI Чатбот өте керемет! Сабақта түсінбей қалған жерімді AI-ға сұрадым, ол қазақша, өте жайлы түсіндірді.',date:'2024-11',avatar:'👧',color:'linear-gradient(135deg,#7c6af7,#4af7b0)'},
+    {name:'Данияр М.',rating:5,text:'Санды тап ойынын 4 рет ойнадым! 7 қадамда тауып алдым 🎯 Браузердегі код редактор да жақсы.',date:'2024-11',avatar:'👦',color:'linear-gradient(135deg,#f7c948,#f74a6a)'},
+    {name:'Зарина К.',rating:5,text:'Дизайны өте әдемі. Қараңғы режим жаққа ауыстырдым, көзіме жайлы болды. Глоссарийдегі іздеу функциясы ыңғайлы.',date:'2024-10',avatar:'👩',color:'linear-gradient(135deg,#4af7b0,#7c6af7)'},
+    {name:'Ерлан Т.',rating:5,text:'Блог мақалалары өте пайдалы! for цикл мақаласын оқығаннан кейін, тапсырманы өзім жазып шықтым.',date:'2024-10',avatar:'👨‍💻',color:'linear-gradient(135deg,#f74a6a,#f7c948)'},
+    {name:'Мөлдір А.',rating:4,text:'Жалпы керемет сайт. Тек видео сабақтарды кеңейтсе болады. Алайда барлық мазмұн түсінікті жазылған.',date:'2024-09',avatar:'👧🏻',color:'linear-gradient(135deg,#4af7b0,#f7c948)'},
+    {name:'Нұрлан С.',rating:5,text:'Аудио кері байланыс функциясы өте ұтымды! Жаза алмайтындарға немесе жылдам пікір қалдырғысы келетіндерге керемет шешім.',date:'2024-09',avatar:'👨',color:'linear-gradient(135deg,#7c6af7,#f74a6a)'},
+];
+
+const colors=['linear-gradient(135deg,#7c6af7,#4af7b0)','linear-gradient(135deg,#f7c948,#f74a6a)','linear-gradient(135deg,#4af7b0,#7c6af7)','linear-gradient(135deg,#f74a6a,#f7c948)'];
+const emojis=['👦','👧','👨','👩','🧑','👩‍💻','👨‍💻'];
+let selStar=5,allReviews=[];
+
+async function loadReviews(){
+    // Load from storage
+    let stored=[];
+    try{
+        const r=await window.storage.get('pylearn_reviews',true);
+        if(r) stored=JSON.parse(r.value);
+    }catch(e){
+        try{const s=localStorage.getItem('pylearn_reviews');if(s)stored=JSON.parse(s);}catch(e2){}
+    }
+    // Merge seed + stored (avoid duplicates by checking name+date)
+    const seedKeys=SEED.map(r=>r.name+'_'+r.date);
+    allReviews=[...SEED,...stored.filter(r=>!seedKeys.includes(r.name+'_'+r.date))];
+    // Sort by date desc
+    allReviews.sort((a,b)=>b.date>a.date?1:-1);
+    renderAll();
+}
+
+async function saveReview(rev){
+    let stored=[];
+    try{
+        const r=await window.storage.get('pylearn_reviews',true);
+        if(r)stored=JSON.parse(r.value);
+    }catch(e){try{const s=localStorage.getItem('pylearn_reviews');if(s)stored=JSON.parse(s);}catch(e2){}}
+    stored.unshift(rev);
+    // Keep max 100
+    stored=stored.slice(0,100);
+    try{await window.storage.set('pylearn_reviews',JSON.stringify(stored),true);}
+    catch(e){try{localStorage.setItem('pylearn_reviews',JSON.stringify(stored));}catch(e2){}}
+}
+
+function renderAll(){
+    const grid=document.getElementById('reviewsGrid');
+    if(!allReviews.length){grid.innerHTML='<div class="loading-msg" style="grid-column:1/-1">Пікірлер жоқ</div>';return;}
+    grid.innerHTML=allReviews.map((r,i)=>`
+    <div class="review-card${i<2?' new-review':''}">
+        <div class="review-head">
+            <div class="rev-avatar" style="background:${r.color||colors[i%colors.length]}">${r.avatar||emojis[i%emojis.length]}</div>
+            <div><div class="rev-name">${esc(r.name)}</div><div class="rev-date">${r.date||''}</div></div>
+        </div>
+        <div class="rev-stars">${'⭐'.repeat(r.rating||5)}</div>
+        <div class="rev-text">${esc(r.text)}</div>
+        ${i===0?'<span class="rev-badge" style="background:rgba(74,247,176,.1);color:#4af7b0;border:1px solid rgba(74,247,176,.2)">✓ Жаңа</span>':''}
+    </div>`).join('');
+    updateStats();
+}
+
+function updateStats(){
+    const n=allReviews.length;
+    const avg=allReviews.reduce((s,r)=>s+(r.rating||5),0)/n;
+    document.getElementById('avgRating').textContent=avg.toFixed(1);
+    document.getElementById('totalCount').textContent=n+' пікір';
+    [5,4,3,2,1].forEach(star=>{
+        const cnt=allReviews.filter(r=>(r.rating||5)===star).length;
+        const pct=n?Math.round(cnt/n*100):0;
+        document.getElementById('bar'+star).style.width=pct+'%';
+        document.getElementById('pct'+star).textContent=pct+'%';
+    });
+}
+
+function setStar(n){
+    selStar=n;
+    document.querySelectorAll('.star-s').forEach((b,i)=>b.classList.toggle('on',i<n));
+}
+setStar(5);
+
+async function addReview(){
+    const name=document.getElementById('rName').value.trim();
+    const text=document.getElementById('rText').value.trim();
+    if(!name||!text){alert('Атыңыз бен пікіріңізді жазыңыз!');return;}
+    const rev={
+        name:name.substring(0,30),text:text.substring(0,300),rating:selStar,
+        date:new Date().toLocaleDateString('kk-KZ'),
+        avatar:emojis[Math.floor(Math.random()*emojis.length)],
+        color:colors[Math.floor(Math.random()*colors.length)]
+    };
+    await saveReview(rev);
+    allReviews.unshift(rev);
+    renderAll();
+    document.getElementById('rSuccess').style.display='block';
+    document.getElementById('rName').value='';
+    document.getElementById('rText').value='';
+    setStar(5);
+    setTimeout(()=>document.getElementById('rSuccess').style.display='none',5000);
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// dark mode
+const dmt=document.getElementById('dmt'),mi=document.getElementById('mi'),body=document.body;
+if(localStorage.getItem('dark-mode')!=='disabled'){mi.textContent='☀️';}
+else{body.classList.add('light-mode');mi.textContent='🌙';}
+dmt.addEventListener('click',()=>{
+    body.classList.toggle('light-mode');
+    if(body.classList.contains('light-mode')){localStorage.setItem('dark-mode','disabled');mi.textContent='🌙';}
+    else{localStorage.setItem('dark-mode','enabled');mi.textContent='☀️';}
+});
+window.addEventListener('scroll',()=>{
+    const s=(window.scrollY/(document.body.scrollHeight-window.innerHeight))*100;
+    document.getElementById('progressBar').style.width=(s||0)+'%';
+});
+
+loadReviews();
+</script>
+<script src="accessibility.js"></script>
+</body>
+</html>

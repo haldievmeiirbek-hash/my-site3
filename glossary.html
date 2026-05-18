@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Глоссарий - Python</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .glossary-wrapper { max-width: 800px; margin: 0 auto; }
+        .search-box {
+            position: relative;
+            margin-bottom: 24px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 14px 20px 14px 48px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            color: var(--text);
+            font-size: 0.95rem;
+            font-family: 'DM Sans', sans-serif;
+            outline: none;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+        .search-input:focus { border-color: var(--primary); }
+        .search-icon {
+            position: absolute;
+            left: 16px; top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.1rem;
+            pointer-events: none;
+        }
+        .term-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 12px;
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            transition: all 0.3s;
+        }
+        .term-card:hover {
+            border-color: rgba(124,106,247,0.3);
+            transform: translateX(6px);
+        }
+        .term-icon {
+            width: 44px; height: 44px;
+            background: rgba(124,106,247,0.12);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .term-name {
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+        .term-en {
+            font-size: 0.75rem;
+            color: var(--accent);
+            margin-bottom: 8px;
+            font-family: 'Space Mono', monospace;
+        }
+        .term-def {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    <button class="dark-mode-toggle" id="dark-mode-toggle"><span id="mode-icon">☀️</span></button>
+    <header>
+        <div class="header-badge">● 8 Термин</div>
+        <h1>Глоссарий</h1>
+        <p>Python терминдер сөздігі</p>
+    </header>
+    <div class="container">
+        <div class="glossary-wrapper">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" id="searchInput" placeholder="Термин іздеу...">
+            </div>
+            <div id="termsList">
+                <div class="term-card" data-term="айнымалы variable">
+                    <div class="term-icon">📦</div>
+                    <div>
+                        <div class="term-name">Айнымалы</div>
+                        <div class="term-en">Variable</div>
+                        <div class="term-def">Мәліметтерді сақтауға арналған атауы бар жад ұяшығы. Python-да: <code style="display:inline;padding:2px 8px;border-radius:4px;font-size:0.8rem;">x = 10</code></div>
+                    </div>
+                </div>
+                <div class="term-card" data-term="цикл loop">
+                    <div class="term-icon">🔄</div>
+                    <div>
+                        <div class="term-name">Цикл</div>
+                        <div class="term-en">Loop</div>
+                        <div class="term-def">Бір немесе бірнеше командалардың белгілі бір шарт орындалғанша немесе белгіленген рет қайталануы. for, while операторлары қолданылады.</div>
+                    </div>
+                </div>
+                <div class="term-card" data-term="шарт condition if">
+                    <div class="term-icon">🔀</div>
+                    <div>
+                        <div class="term-name">Шарт</div>
+                        <div class="term-en">Condition</div>
+                        <div class="term-def">Бағдарламаның белгілі бір жағдайға байланысты таңдау жасауы. Python-да if-elif-else операторы арқылы іске асырылады.</div>
+                    </div>
+                </div>
+                <div class="term-card" data-term="функция function def">
+                    <div class="term-icon">⚙️</div>
+                    <div>
+                        <div class="term-name">Функция</div>
+                        <div class="term-en">Function</div>
+                        <div class="term-def">Нақты бір тапсырманы орындайтын атауы бар код бөлігі. def кілт сөзімен анықталады.</div>
+                    </div>
+                </div>
+                <div class="term-card" data-term="алгоритм algorithm">
+                    <div class="term-icon">📋</div>
+                    <div>
+                        <div class="term-name">Алгоритм</div>
+                        <div class="term-en">Algorithm</div>
+                        <div class="term-def">Есепті шешу үшін орындалатын қадамдардың нақты реттелген тізімі. Дискреттілік, анықтылық, нәтижелілік қасиеттері бар.</div>
+                    </div>
+                </div>
+                <div class="term-card" data-term="деректер типі data type int float str">
+                    <div class="term-icon">🏷️</div>
+                    <div>
+                        <div class="term-name">Деректер типі</div>
+                        <div class="term-en">Data Type</div>
+                        <div class="term-def">Айнымалының сақтайтын мәліметінің түрі. Python-да: int (бүтін), float (нақты), str (мәтін), bool (логикалық).</div>
+                    </div>
+                </div>
+                <div class="term-card" data-term="оператор operator">
+                    <div class="term-icon">➕</div>
+                    <div>
+                        <div class="term-name">Оператор</div>
+                        <div class="term-en">Operator</div>
+                        <div class="term-def">Мәліметтермен амалдар жасауға арналған арнайы белгі: +, -, *, /, **, %, //, ==, !=, <, > және т.б.</div>
+                    </div>
+                </div>
+                <div class="term-card" data-term="синтаксис syntax қате error">
+                    <div class="term-icon">🐛</div>
+                    <div>
+                        <div class="term-name">Синтаксис қатесі</div>
+                        <div class="term-en">Syntax Error</div>
+                        <div class="term-def">Python тілінің жазылу ережелерін бұзған кезде пайда болатын қате. Бағдарлама іске қосылмайды.</div>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align:center; margin-top:32px;">
+                <a href="index.html" class="back-btn">← Басты бетке қайту</a>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const q = this.value.toLowerCase();
+            document.querySelectorAll('.term-card').forEach(card => {
+                card.style.display = card.dataset.term.includes(q) || q === '' ? '' : 'none';
+            });
+        });
+        const toggleBtn = document.getElementById('dark-mode-toggle');
+        const modeIcon = document.getElementById('mode-icon');
+        const body = document.body;
+        if (localStorage.getItem('dark-mode') !== 'disabled') { modeIcon.textContent = '☀️'; }
+        else { body.classList.add('light-mode'); modeIcon.textContent = '🌙'; }
+        toggleBtn.addEventListener('click', () => {
+            body.classList.toggle('light-mode');
+            if (body.classList.contains('light-mode')) { localStorage.setItem('dark-mode', 'disabled'); modeIcon.textContent = '🌙'; }
+            else { localStorage.setItem('dark-mode', 'enabled'); modeIcon.textContent = '☀️'; }
+        });
+    </script>
+<script src="accessibility.js"></script>
+</body>
+</html>

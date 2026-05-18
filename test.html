@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест — Python білімін тексеру</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .test-wrap{max-width:760px;margin:0 auto}
+        .test-header-bar{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 24px;display:flex;align-items:center;gap:20px;margin-bottom:24px;flex-wrap:wrap}
+        .test-progress-track{flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;min-width:120px}
+        .test-progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:4px;transition:width .4s}
+        .test-counter{font-family:'Space Mono',monospace;font-size:.8rem;color:var(--text-muted);white-space:nowrap}
+        .test-score-display{font-family:'Unbounded',sans-serif;font-size:.85rem;color:var(--accent);white-space:nowrap}
+        .question-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;margin-bottom:18px;animation:fadeUp .3s ease;display:none}
+        .question-card.active{display:block}
+        .q-num{font-family:'Space Mono',monospace;font-size:.65rem;color:var(--primary);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+        .q-text{font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:18px;line-height:1.6}
+        .q-code{display:block;background:#0d0d14;color:#f8f8f2;padding:12px 16px;border-radius:10px;font-family:'Space Mono',monospace;font-size:.78rem;margin-bottom:16px;white-space:pre;border:1px solid rgba(255,255,255,.07)}
+        .options{display:grid;gap:10px}
+        .option{display:flex;align-items:center;gap:12px;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:13px 16px;cursor:pointer;transition:all .25s;user-select:none}
+        .option:hover{border-color:rgba(124,106,247,.4);background:rgba(124,106,247,.06)}
+        .option.selected{border-color:var(--primary);background:rgba(124,106,247,.1)}
+        .option.correct{border-color:#4af7b0!important;background:rgba(74,247,176,.12)!important}
+        .option.wrong{border-color:#f74a6a!important;background:rgba(247,74,106,.1)!important}
+        .option-letter{width:28px;height:28px;border-radius:8px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:.75rem;font-weight:700;flex-shrink:0;transition:all .25s}
+        .option.selected .option-letter{background:var(--primary);color:#fff;border-color:var(--primary)}
+        .option.correct .option-letter{background:#4af7b0;color:#0a1a0a;border-color:#4af7b0}
+        .option.wrong .option-letter{background:#f74a6a;color:#fff;border-color:#f74a6a}
+        .option-text{font-size:.88rem;color:var(--text);line-height:1.4}
+        .q-feedback{margin-top:14px;padding:12px 16px;border-radius:10px;font-size:.85rem;display:none;line-height:1.6}
+        .q-feedback.show{display:block}
+        .fb-correct{background:rgba(74,247,176,.1);border:1px solid rgba(74,247,176,.3);color:#4af7b0}
+        .fb-wrong{background:rgba(247,74,106,.1);border:1px solid rgba(247,74,106,.3);color:#f74a6a}
+        .q-nav{display:flex;gap:10px;margin-top:16px;justify-content:space-between;align-items:center}
+        .q-btn{padding:10px 22px;border-radius:10px;font-size:.83rem;font-weight:700;cursor:pointer;transition:all .3s;font-family:'DM Sans',sans-serif;border:none}
+        .q-btn-next{background:var(--primary);color:#fff;box-shadow:0 4px 14px rgba(124,106,247,.3)}
+        .q-btn-next:hover{transform:translateY(-2px)}
+        .q-btn-prev{background:var(--surface2);color:var(--text-muted);border:1px solid var(--border)}
+        .q-btn-prev:hover{color:var(--text)}
+        .q-btn:disabled{opacity:.4;cursor:default;transform:none}
+        /* Results */
+        .results-card{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:40px;text-align:center;display:none;animation:fadeUp .4s ease}
+        .results-card.show{display:block}
+        .res-circle{width:140px;height:140px;border-radius:50%;border:6px solid var(--border);margin:0 auto 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;background:var(--surface2)}
+        .res-num{font-family:'Unbounded',sans-serif;font-size:2.2rem;font-weight:900;line-height:1}
+        .res-total{font-size:.75rem;color:var(--text-muted);font-family:'Space Mono',monospace}
+        .res-title{font-family:'Unbounded',sans-serif;font-size:1.3rem;font-weight:900;margin-bottom:8px}
+        .res-subtitle{color:var(--text-muted);font-size:.9rem;margin-bottom:28px;line-height:1.6}
+        .res-bars{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px}
+        .res-bar{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center}
+        .res-bar-num{font-family:'Unbounded',sans-serif;font-size:1.4rem;font-weight:900}
+        .res-bar-label{font-size:.72rem;color:var(--text-muted);margin-top:4px;font-family:'Space Mono',monospace}
+        .res-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+        .restart-btn{padding:12px 28px;background:var(--primary);color:#fff;border:none;border-radius:50px;cursor:pointer;font-weight:700;font-size:.875rem;font-family:'DM Sans',sans-serif;box-shadow:0 6px 20px rgba(124,106,247,.3);transition:all .3s}
+        .restart-btn:hover{transform:translateY(-2px)}
+        /* Q dots nav */
+        .q-dots{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px}
+        .q-dot{width:28px;height:28px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;font-size:.72rem;font-family:'Space Mono',monospace;transition:all .2s;display:flex;align-items:center;justify-content:center;color:var(--text-muted)}
+        .q-dot.done-c{background:rgba(74,247,176,.2);border-color:rgba(74,247,176,.5);color:#4af7b0}
+        .q-dot.done-w{background:rgba(247,74,106,.15);border-color:rgba(247,74,106,.4);color:#f74a6a}
+        .q-dot.current{background:var(--primary);border-color:var(--primary);color:#fff}
+    </style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<nav class="navbar">
+    <a href="index.html" class="nav-logo">🐍 PyLearn KZ</a>
+    <div class="nav-links">
+        <a href="index.html" class="nav-link">Басты бет</a>
+        <a href="sabaq.html" class="nav-link">Сабақ</a>
+        <a href="test.html" class="nav-link active">Тест</a>
+        <a href="chatbot.html" class="nav-link highlight">🤖 AI Чат</a>
+    </div>
+    <div class="nav-right">
+        <button class="dark-mode-toggle" id="dmt"><span id="mi">☀️</span></button>
+        <button class="hamburger" onclick="document.getElementById('mm').classList.toggle('open')">☰</button>
+    </div>
+</nav>
+<div class="mobile-menu" id="mm">
+    <a href="index.html" class="nav-link">Басты бет</a>
+    <a href="test.html" class="nav-link active">Тест</a>
+</div>
+
+<header>
+    <div class="header-badge">● 25 Сұрақ · Python негіздері</div>
+    <h1>Білімді тексер</h1>
+    <p>Барлық сұрақтарға жауап беріп, нәтижеңізді біліңіз</p>
+</header>
+
+<div class="container">
+<div class="test-wrap">
+
+<div class="test-header-bar">
+    <div class="q-dots" id="qDots"></div>
+</div>
+<div class="test-header-bar" style="margin-top:-10px">
+    <div class="test-counter" id="testCounter">Сұрақ 1 / 25</div>
+    <div class="test-progress-track"><div class="test-progress-fill" id="testProg" style="width:4%"></div></div>
+    <div class="test-score-display" id="scoreDisp">✓ 0 / ✗ 0</div>
+</div>
+
+<div id="questionsArea"></div>
+
+<div class="results-card" id="resultsCard">
+    <div class="res-circle" id="resCircle">
+        <div class="res-num" id="resNum">0</div>
+        <div class="res-total" id="resTotal">/ 25</div>
+    </div>
+    <div class="res-title" id="resTitle">Нәтиже</div>
+    <div class="res-subtitle" id="resSubtitle"></div>
+    <div class="res-bars">
+        <div class="res-bar"><div class="res-bar-num" id="rCorrect" style="color:#4af7b0">0</div><div class="res-bar-label">Дұрыс</div></div>
+        <div class="res-bar"><div class="res-bar-num" id="rWrong" style="color:#f74a6a">0</div><div class="res-bar-label">Қате</div></div>
+        <div class="res-bar"><div class="res-bar-num" id="rPct" style="color:var(--primary)">0%</div><div class="res-bar-label">Пайыз</div></div>
+    </div>
+    <div class="res-actions">
+        <button class="restart-btn" onclick="restart()">↺ Қайтадан</button>
+        <a href="sabaq.html" class="back-btn" style="margin:0">Сабаққа оралу</a>
+        <a href="chatbot.html" class="back-btn" style="margin:0;border-color:rgba(124,106,247,.4);color:var(--primary)">🤖 AI Сұра</a>
+    </div>
+</div>
+
+<div style="text-align:center;margin-top:24px">
+    <a href="index.html" class="back-btn">← Басты бет</a>
+</div>
+</div>
+</div>
+
+<script>
+const Q=[
+{q:"Python-да экранға мәтін шығаратын функция қайсы?",opts:["input()","print()","write()","show()"],ans:1,exp:"print() функциясы деректерді экранға шығарады."},
+{q:"Python-да пайдаланушыдан мәліметті қалай аламыз?",opts:["get()","read()","input()","scan()"],ans:2,exp:"input() функциясы пайдаланушыдан мәліметті алады."},
+{q:"Төмендегі кодтың шығуы қандай?\nprint(2 + 3 * 4)",opts:["20","14","18","24"],ans:1,exp:"Математикада алдымен 3*4=12, содан кейін 2+12=14. Операциялар реті сақталады."},
+{q:"Python-да қандай айнымалы атауы дұрыс?",opts:["2abc","my-var","my_var","my var"],ans:2,exp:"Айнымалы атауы сан, дефис, бос орыннан басталмайды. my_var — дұрыс."},
+{q:"'Hello' + 'World' амалының нәтижесі не?",opts:["HelloWorld","Hello World","Error","Hello+World"],ans:0,exp:"Python-да жолдарды '+' арқылы жалғауға болады (конкатенация)."},
+{q:"int('42') не қайтарады?",opts:["'42'","42.0","42","TypeError"],ans:2,exp:"int() функциясы жол немесе float типін бүтін санға айналдырады."},
+{q:"range(5) нені береді?",opts:["1,2,3,4,5","0,1,2,3,4","0,1,2,3,4,5","1,2,3,4"],ans:1,exp:"range(5) нөлден басталып 5-ке дейін (5 кірмейді) тізбек береді: 0,1,2,3,4"},
+{q:"Қай оператор 'тең емес' дегенді білдіреді?",opts:["<>","!=","=/=","!=="],ans:1,exp:"Python-да != операторы 'тең емес' мағынасын білдіреді."},
+{q:"for i in range(3): print(i) — шығуы?",opts:["1 2 3","0 1 2 3","0 1 2","1 2"],ans:2,exp:"range(3) — 0,1,2 береді. Яғни 0, 1, 2 шығады."},
+{q:"if шартының блогы Python-да қалай белгіленеді?",opts:["Фигурлы жақша {}","Шегіністі (indent)","Нүктелі үтір ;","BEGIN...END"],ans:1,exp:"Python-да блоктар шегіністі (4 бос орын немесе Tab) арқылы белгіленеді."},
+{q:"Қай сөз тіркесі функцияны анықтайды?",opts:["function","def","func","define"],ans:1,exp:"Python-да функцияны 'def' кілт сөзімен анықтайды."},
+{q:"Python-да # символы нені білдіреді?",opts:["Берілгендер","Комментарий","Функция","Блок"],ans:1,exp:"# символынан кейінгі мәтін комментарий болып саналады, Python оны орындамайды."},
+{q:"10 % 3 амалының нәтижесі?",opts:["3","1","0.33","3.33"],ans:1,exp:"% — бөлу қалдығын береді. 10 ÷ 3 = 3 (қалдық 1)."},
+{q:"while True: циклі не үшін қолданылады?",opts:["Бір рет орындалу","Шексіз цикл (break дейін)","Шартсыз","Тек жолдармен"],ans:1,exp:"while True: шексіз цикл жасайды. break арқылы тоқтатылады."},
+{q:"Python-да тізімді қалай анықтаймыз?",opts:["(1,2,3)","[1,2,3]","{1,2,3}","<1,2,3>"],ans:1,exp:"Тізімдер (list) шаршы жақшамен [] анықталады."},
+{q:"len('Python') нені қайтарады?",opts:["5","6","7","Қате"],ans:1,exp:"'Python' жолында 6 символ бар (P-y-t-h-o-n). len() ұзындықты береді."},
+{q:"True and False нәтижесі?",opts:["True","False","None","Error"],ans:1,exp:"and операторы: екеуі де True болса ғана True. True and False = False."},
+{q:"Python-да break нені жасайды?",opts:["Функцияны тоқтатады","Циклден шығады","Бағдарламаны аяқтайды","Шарт тексереді"],ans:1,exp:"break операторы ағымдағы циклден шыққызады."},
+{q:"f'{3 + 4}' нені шығарады?",opts:["3 + 4","7","f'7'","Қате"],ans:1,exp:"f-string {} ішіндегі өрнекті есептейді. 3+4=7, сондықтан '7' шығады."},
+{q:"not True нәтижесі?",opts:["True","False","None","1"],ans:1,exp:"not операторы логикалық мәнді керісінше айналдырады. not True = False."},
+{q:"type(3.14) нені қайтарады?",opts:["int","str","float","double"],ans:2,exp:"3.14 — нақты сан (float типі). type() функциясы объектінің типін береді."},
+{q:"for i in range(2, 10, 3) тізбегі?",opts:["2,5,8","2,4,6,8","3,6,9","2,3,4"],ans:0,exp:"range(2, 10, 3): 2-ден басталып, қадамы 3 болып, 10-ға дейін: 2, 5, 8."},
+{q:"Функция мән қайтаруға қай сөзді қолданады?",opts:["give","send","return","output"],ans:2,exp:"return кілт сөзі функциядан мән қайтарады."},
+{q:"Python-да elif нені білдіреді?",opts:["else if","end if","else","elif жоқ"],ans:0,exp:"elif — 'else if' мағынасында: бірінші шарт орындалмаса, келесіні тексеру."},
+{q:"[1,2,3].append(4) нәтижесі?",opts:["[1,2,3]","[4,1,2,3]","[1,2,3,4]","Қате"],ans:2,exp:"append() тізімнің соңына элемент қосады. [1,2,3] → [1,2,3,4]."},
+];
+
+let cur=0,score=0,wrong=0,answered=[],userAns=[];
+
+function init(){
+    answered=new Array(Q.length).fill(false);
+    userAns=new Array(Q.length).fill(-1);
+    cur=0;score=0;wrong=0;
+    buildDots();
+    buildQuestions();
+    updateHeader();
+    document.getElementById('resultsCard').classList.remove('show');
+    document.getElementById('questionsArea').style.display='';
+    showQ(0);
+}
+
+function buildDots(){
+    const d=document.getElementById('qDots');
+    d.innerHTML=Q.map((_,i)=>`<div class="q-dot" id="dot${i}" onclick="jumpTo(${i})">${i+1}</div>`).join('');
+}
+
+function buildQuestions(){
+    const area=document.getElementById('questionsArea');
+    area.innerHTML=Q.map((q,qi)=>`
+    <div class="question-card" id="qcard${qi}">
+        <div class="q-num">Сұрақ ${qi+1} / ${Q.length}</div>
+        <div class="q-text">${q.q.includes('\n')?q.q.split('\n').map((l,i)=>i===0?l:`<code class="q-code">${esc(l)}</code>`).join(''):q.q}</div>
+        <div class="options" id="opts${qi}">
+            ${q.opts.map((o,oi)=>`<div class="option" id="opt${qi}_${oi}" onclick="choose(${qi},${oi})">
+                <div class="option-letter">${'ABCD'[oi]}</div>
+                <div class="option-text">${esc(o)}</div>
+            </div>`).join('')}
+        </div>
+        <div class="q-feedback" id="fb${qi}"></div>
+        <div class="q-nav">
+            <button class="q-btn q-btn-prev" onclick="prev()" ${qi===0?'disabled':''}>← Алдыңғы</button>
+            <button class="q-btn q-btn-next" id="nextBtn${qi}" onclick="next(${qi})">${qi===Q.length-1?'Аяқтау ✓':'Келесі →'}</button>
+        </div>
+    </div>`).join('');
+}
+
+function showQ(i){
+    document.querySelectorAll('.question-card').forEach(c=>c.classList.remove('active'));
+    document.getElementById('qcard'+i).classList.add('active');
+    cur=i;
+    updateHeader();
+    updateDots();
+}
+
+function jumpTo(i){ showQ(i); }
+
+function choose(qi,oi){
+    if(answered[qi]) return;
+    answered[qi]=true;
+    userAns[qi]=oi;
+    const correct=Q[qi].ans;
+    const isRight=oi===correct;
+    if(isRight) score++; else wrong++;
+
+    // Style options
+    for(let j=0;j<Q[qi].opts.length;j++){
+        const opt=document.getElementById(`opt${qi}_${j}`);
+        if(j===correct) opt.classList.add('correct');
+        else if(j===oi&&!isRight) opt.classList.add('wrong');
+        opt.style.cursor='default';
+        opt.onclick=null;
+    }
+    document.getElementById(`opt${qi}_${oi}`).classList.add('selected');
+
+    // Feedback
+    const fb=document.getElementById('fb'+qi);
+    fb.className='q-feedback show '+(isRight?'fb-correct':'fb-wrong');
+    fb.innerHTML=isRight?`✓ Дұрыс! ${Q[qi].exp}`:`✗ Қате. Дұрыс жауап: <strong>${Q[qi].opts[correct]}</strong>. ${Q[qi].exp}`;
+
+    updateHeader();
+    updateDots();
+}
+
+function next(qi){
+    if(qi<Q.length-1) showQ(qi+1);
+    else showResults();
+}
+
+function prev(){ if(cur>0) showQ(cur-1); }
+
+function updateHeader(){
+    const done=answered.filter(Boolean).length;
+    document.getElementById('testCounter').textContent=`Сұрақ ${cur+1} / ${Q.length}`;
+    document.getElementById('testProg').style.width=((cur+1)/Q.length*100)+'%';
+    document.getElementById('scoreDisp').textContent=`✓ ${score} / ✗ ${wrong}`;
+}
+
+function updateDots(){
+    Q.forEach((_,i)=>{
+        const d=document.getElementById('dot'+i);
+        d.className='q-dot';
+        if(i===cur) d.classList.add('current');
+        else if(answered[i]) d.classList.add(userAns[i]===Q[i].ans?'done-c':'done-w');
+    });
+}
+
+function showResults(){
+    document.getElementById('questionsArea').style.display='none';
+    const rc=document.getElementById('resultsCard');
+    rc.classList.add('show');
+    const pct=Math.round(score/Q.length*100);
+    document.getElementById('resNum').textContent=score;
+    document.getElementById('resTotal').textContent='/ '+Q.length;
+    document.getElementById('rCorrect').textContent=score;
+    document.getElementById('rWrong').textContent=wrong;
+    document.getElementById('rPct').textContent=pct+'%';
+    const circle=document.getElementById('resCircle');
+    let title,sub,color;
+    if(pct>=90){title='🏆 Тамаша!';sub='Өте жақсы нәтиже! Python-ды жетік меңгердіңіз.';color='#4af7b0';}
+    else if(pct>=75){title='⭐ Жақсы!';sub='Жақсы нәтиже! Кейбір тақырыптарды қайталау керек.';color='var(--accent)';}
+    else if(pct>=50){title='💪 Жарайсың!';sub='Қанағаттанарлық. Сабақтарды қайталап, қайтадан тапсырыңыз.';color='var(--primary)';}
+    else{title='📚 Жалғастыр!';sub='Сабақтарды мұқият оқыңыз және қайтадан тапсырыңыз.';color='#f74a6a';}
+    document.getElementById('resTitle').textContent=title;
+    document.getElementById('resSubtitle').textContent=sub;
+    circle.style.borderColor=color;
+    document.getElementById('resNum').style.color=color;
+}
+
+function restart(){ init(); window.scrollTo(0,0); }
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// dark mode
+const dmt=document.getElementById('dmt'),mi=document.getElementById('mi'),body=document.body;
+if(localStorage.getItem('dark-mode')!=='disabled'){mi.textContent='☀️';}
+else{body.classList.add('light-mode');mi.textContent='🌙';}
+dmt.addEventListener('click',()=>{
+    body.classList.toggle('light-mode');
+    if(body.classList.contains('light-mode')){localStorage.setItem('dark-mode','disabled');mi.textContent='🌙';}
+    else{localStorage.setItem('dark-mode','enabled');mi.textContent='☀️';}
+});
+window.addEventListener('scroll',()=>{
+    const s=(window.scrollY/(document.body.scrollHeight-window.innerHeight))*100;
+    document.getElementById('progressBar').style.width=(s||0)+'%';
+});
+
+init();
+</script>
+<script src="accessibility.js"></script>
+</body>
+</html>

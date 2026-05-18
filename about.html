@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мен туралы — Информатика мұғалімі</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .about-wrap { max-width: 860px; margin: 0 auto; }
+        .profile-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px;
+            display: flex;
+            gap: 36px;
+            align-items: flex-start;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        .profile-card::before { content:''; position:absolute; top:-60px; right:-60px; width:200px; height:200px; background:radial-gradient(circle, rgba(124,106,247,0.12) 0%, transparent 70%); }
+        .avatar-big { width: 130px; height: 130px; border-radius: 24px; background: linear-gradient(135deg, #7c6af7, #4af7b0); display: flex; align-items: center; justify-content: center; font-size: 4rem; flex-shrink: 0; border: 3px solid rgba(255,255,255,0.1); }
+        .profile-info { flex: 1; }
+        .profile-name { font-family: 'Unbounded', sans-serif; font-size: 1.4rem; font-weight: 900; margin-bottom: 6px; }
+        .profile-role { color: var(--primary); font-size: 0.85rem; font-family: 'Space Mono', monospace; letter-spacing: 1px; margin-bottom: 16px; }
+        .profile-bio { color: var(--text-muted); font-size: 0.9rem; line-height: 1.7; margin-bottom: 18px; }
+        .profile-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+        .p-tag { font-size: 0.72rem; padding: 4px 12px; border-radius: 50px; font-family: 'Space Mono', monospace; background: rgba(124,106,247,0.1); color: var(--primary); border: 1px solid rgba(124,106,247,0.2); }
+        .social-links { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+        .soc-btn { display: flex; align-items: center; gap: 8px; padding: 9px 16px; border: 1px solid var(--border); border-radius: 10px; text-decoration: none; color: var(--text-muted); font-size: 0.82rem; transition: all 0.3s; font-family: 'DM Sans', sans-serif; font-weight: 500; }
+        .soc-btn:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
+        .timeline-section { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 28px; margin-bottom: 18px; }
+        .tl-title { font-family: 'Unbounded', sans-serif; font-size: 0.9rem; margin-bottom: 20px; }
+        .tl-item { display: flex; gap: 16px; margin-bottom: 18px; }
+        .tl-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--primary); flex-shrink: 0; margin-top: 5px; position: relative; }
+        .tl-dot::after { content:''; position:absolute; top:12px; left:5px; width:2px; height:calc(100% + 10px); background:var(--border); }
+        .tl-item:last-child .tl-dot::after { display: none; }
+        .tl-year { font-family: 'Space Mono', monospace; font-size: 0.72rem; color: var(--accent); margin-bottom: 4px; }
+        .tl-text { font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; }
+        .tl-head { font-weight: 600; color: var(--text); margin-bottom: 4px; }
+        .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        @media(max-width:640px) { .skills-grid { grid-template-columns: 1fr 1fr; } .profile-card { flex-direction: column; align-items: center; text-align: center; } .social-links { justify-content: center; } .profile-tags { justify-content: center; } }
+        .skill-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 14px; text-align: center; }
+        .skill-icon { font-size: 1.8rem; margin-bottom: 6px; }
+        .skill-name { font-size: 0.8rem; font-weight: 600; color: var(--text); }
+        .skill-lvl { font-size: 0.68rem; color: var(--primary); font-family: 'Space Mono', monospace; margin-top: 2px; }
+        .goals-list { list-style: none; }
+        .goals-list li { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.88rem; color: var(--text-muted); }
+        .goals-list li span.g-icon { font-size: 1.1rem; flex-shrink: 0; }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    <nav class="navbar">
+        <a href="index.html" class="nav-logo">🐍 PyLearn KZ</a>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Басты бет</a>
+            <a href="chatbot.html" class="nav-link highlight">🤖 AI Чат</a>
+            <a href="blog.html" class="nav-link">Блог</a>
+            <a href="faq.html" class="nav-link">FAQ</a>
+            <a href="reviews.html" class="nav-link">Пікірлер</a>
+            <a href="about.html" class="nav-link active">Мен туралы</a>
+            <a href="contact.html" class="nav-link">Байланыс</a>
+        </div>
+        <div class="nav-right">
+            <button class="dark-mode-toggle" id="dark-mode-toggle"><span id="mode-icon">☀️</span></button>
+            <button class="hamburger" onclick="document.getElementById('mobileMenu').classList.toggle('open')">☰</button>
+        </div>
+    </nav>
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="index.html" class="nav-link">Басты бет</a>
+        <a href="about.html" class="nav-link active">Мен туралы</a>
+        <a href="contact.html" class="nav-link">Байланыс</a>
+    </div>
+
+    <header>
+        <div class="header-badge">● Мен туралы</div>
+        <h1>Авторлық бет</h1>
+        <p>Информатика мұғалімі · Python жасаушысы</p>
+    </header>
+
+    <div class="container">
+        <div class="about-wrap">
+            <div class="profile-card">
+                <div class="avatar-big">👨‍💻</div>
+                <div class="profile-info">
+                    <div class="profile-name">Информатика мұғалімі</div>
+                    <div class="profile-role">Python · Алгоритмдер · 7-сынып</div>
+                    <div class="profile-bio">Бұл сайт — 7-сынып оқушылары үшін арнайы жасалған электронды оқулық. Мен информатика пәнін оқытамын және технологияларды оқыту процесіне енгізуге ынталымын. Оқушыларым программалаудың негіздерін жайлы, қызықты және тиімді тәсілмен үйренсін деп бұл платформаны жасадым.</div>
+                    <div class="profile-tags">
+                        <span class="p-tag">Python</span>
+                        <span class="p-tag">Информатика</span>
+                        <span class="p-tag">EdTech</span>
+                        <span class="p-tag">7-сынып</span>
+                        <span class="p-tag">ҚМЖ</span>
+                    </div>
+                    <div class="social-links">
+                        <a href="#" class="soc-btn">📸 Instagram</a>
+                        <a href="#" class="soc-btn">🎵 TikTok</a>
+                        <a href="#" class="soc-btn">▶️ YouTube</a>
+                        <a href="#" class="soc-btn">✈️ Telegram</a>
+                        <a href="#" class="soc-btn">💼 LinkedIn</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-section">
+                <div class="tl-title">📅 Даму тарихы</div>
+                <div class="tl-item">
+                    <div class="tl-dot"></div>
+                    <div><div class="tl-year">2022</div><div class="tl-head">Информатика мұғалімі болдым</div><div class="tl-text">Мектепте информатика пәнін оқыта бастадым. Оқушыларға программалауды үйретуге деген ынта пайда болды.</div></div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-dot"></div>
+                    <div><div class="tl-year">2023</div><div class="tl-head">Python бағдарламасын жасадым</div><div class="tl-text">7-сыныпқа арналған Python оқу бағдарламасын авторлық жоспармен жасадым. ҚМЖ, практикалық тапсырмалар, тесттер.</div></div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-dot"></div>
+                    <div><div class="tl-year">2024</div><div class="tl-head">PyLearn KZ платформасы іске қосылды</div><div class="tl-text">Барлық материалдарды цифрлық форматқа ауыстырып, интерактивті веб-сайт жасадым. AI чатбот, код редактор, аудио кері байланыс қосылды.</div></div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-dot" style="background:var(--accent)"></div>
+                    <div><div class="tl-year">2025 →</div><div class="tl-head">Мақсаттар</div><div class="tl-text">Платформаны 8-9 сыныпқа кеңейту. Тіркеу жүйесі мен прогресс трекері қосу. Қазақстандағы мектептерге тарату.</div></div>
+                </div>
+            </div>
+
+            <div class="timeline-section">
+                <div class="tl-title">⚙️ Дағдылар</div>
+                <div class="skills-grid">
+                    <div class="skill-item"><div class="skill-icon">🐍</div><div class="skill-name">Python</div><div class="skill-lvl">Деңгей: ●●●●○</div></div>
+                    <div class="skill-item"><div class="skill-icon">🌐</div><div class="skill-name">HTML / CSS</div><div class="skill-lvl">Деңгей: ●●●●○</div></div>
+                    <div class="skill-item"><div class="skill-icon">⚡</div><div class="skill-name">JavaScript</div><div class="skill-lvl">Деңгей: ●●●○○</div></div>
+                    <div class="skill-item"><div class="skill-icon">📊</div><div class="skill-name">Алгоритм</div><div class="skill-lvl">Деңгей: ●●●●●</div></div>
+                    <div class="skill-item"><div class="skill-icon">👨‍🏫</div><div class="skill-name">Педагогика</div><div class="skill-lvl">Деңгей: ●●●●●</div></div>
+                    <div class="skill-item"><div class="skill-icon">🤖</div><div class="skill-name">AI / EdTech</div><div class="skill-lvl">Деңгей: ●●●○○</div></div>
+                </div>
+            </div>
+
+            <div class="timeline-section">
+                <div class="tl-title">🎯 Мақсаттарым</div>
+                <ul class="goals-list">
+                    <li><span class="g-icon">🚀</span> Қазақстандағы мектептерде программалауды жаппай енгізу</li>
+                    <li><span class="g-icon">🌐</span> PyLearn KZ-ні 1000+ оқушыға жеткізу</li>
+                    <li><span class="g-icon">📱</span> Мобильді қосымша жасау</li>
+                    <li><span class="g-icon">🤖</span> AI-дың оқыту процесіне тиімді интеграциясы</li>
+                    <li><span class="g-icon">🏫</span> Барлық сынып деңгейлеріне (5-11) курс жасау</li>
+                </ul>
+            </div>
+
+            <div style="text-align:center;margin-top:28px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+                <a href="contact.html" class="btn-primary" style="display:inline-flex;align-items:center;gap:8px;background:var(--primary);color:white;padding:12px 28px;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.875rem;">💬 Хабарласу</a>
+                <a href="index.html" class="back-btn">← Басты бет</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const toggleBtn = document.getElementById('dark-mode-toggle');
+    const modeIcon = document.getElementById('mode-icon');
+    const body = document.body;
+    if (localStorage.getItem('dark-mode') !== 'disabled') { modeIcon.textContent = '☀️'; }
+    else { body.classList.add('light-mode'); modeIcon.textContent = '🌙'; }
+    toggleBtn.addEventListener('click', () => {
+        body.classList.toggle('light-mode');
+        if (body.classList.contains('light-mode')) { localStorage.setItem('dark-mode', 'disabled'); modeIcon.textContent = '🌙'; }
+        else { localStorage.setItem('dark-mode', 'enabled'); modeIcon.textContent = '☀️'; }
+    });
+    window.addEventListener('scroll', () => {
+        const s = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+        document.getElementById('progressBar').style.width = (s||0) + '%';
+    });
+    </script>
+<script src="accessibility.js"></script>
+</body>
+</html>

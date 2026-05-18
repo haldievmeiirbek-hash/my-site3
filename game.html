@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ойындар — Python тақырыбы</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .games-tabs{display:flex;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:6px;margin-bottom:24px;max-width:760px;margin-left:auto;margin-right:auto}
+        .gtab{flex:1;padding:11px;border:none;border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;transition:all .3s;background:transparent;color:var(--text-muted);text-align:center}
+        .gtab.active{background:var(--primary);color:#fff;box-shadow:0 4px 14px rgba(124,106,247,.35)}
+        .game-panel{display:none;max-width:760px;margin:0 auto}
+        .game-panel.active{display:block}
+
+        /* Common game UI */
+        .game-area{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;margin-bottom:20px}
+        .game-title{font-family:'Unbounded',sans-serif;font-size:1.05rem;font-weight:900;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+        .game-desc{color:var(--text-muted);font-size:.85rem;margin-bottom:20px;line-height:1.6}
+        .game-meta{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+        .gstat{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 16px;text-align:center;min-width:80px}
+        .gstat-val{font-family:'Unbounded',sans-serif;font-size:1.1rem;font-weight:900;color:var(--primary)}
+        .gstat-label{font-size:.65rem;color:var(--text-muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+        .game-input-row{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+        .game-input{flex:1;padding:12px 16px;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:1rem;font-family:'Space Mono',monospace;outline:none;transition:border-color .3s;min-width:120px}
+        .game-input:focus{border-color:var(--primary)}
+        .game-btn{padding:12px 22px;background:var(--primary);color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:700;font-size:.88rem;font-family:'DM Sans',sans-serif;transition:all .3s;white-space:nowrap}
+        .game-btn:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(124,106,247,.4)}
+        .game-btn.danger{background:#f74a6a;box-shadow:none}
+        .game-btn.secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+        .game-msg{padding:14px 18px;border-radius:12px;font-weight:700;font-size:.9rem;text-align:center;margin:12px 0;display:none}
+        .game-msg.show{display:block}
+        .msg-hint{background:rgba(124,106,247,.1);border:1px solid rgba(124,106,247,.3);color:var(--primary)}
+        .msg-win{background:rgba(74,247,176,.1);border:1px solid rgba(74,247,176,.4);color:#4af7b0}
+        .msg-lose{background:rgba(247,74,106,.1);border:1px solid rgba(247,74,106,.3);color:#f74a6a}
+        .msg-info{background:rgba(247,201,72,.07);border:1px solid rgba(247,201,72,.3);color:var(--accent)}
+        .hint-bar{height:10px;background:var(--surface2);border-radius:5px;overflow:hidden;margin:10px 0}
+        .hint-fill{height:100%;border-radius:5px;transition:width .5s,background .5s}
+        .history-list{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+        .hist-item{font-family:'Space Mono',monospace;font-size:.72rem;padding:3px 9px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text-muted)}
+        .hist-item.hot{border-color:rgba(247,74,106,.4);color:#f74a6a}
+        .hist-item.cold{border-color:rgba(124,106,247,.4);color:var(--primary)}
+
+        /* Leaderboard */
+        .leaderboard{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px}
+        .lb-title{font-family:'Space Mono',monospace;font-size:.65rem;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+        .lb-row{display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--border);transition:background .2s}
+        .lb-row:last-child{border-bottom:none}
+        .lb-rank{font-family:'Unbounded',sans-serif;font-size:.85rem;font-weight:900;min-width:28px;text-align:center}
+        .lb-rank-1{color:#f7c948}.lb-rank-2{color:#aaa}.lb-rank-3{color:#cd7f32}
+        .lb-name{flex:1;font-weight:600;font-size:.88rem}
+        .lb-score{font-family:'Space Mono',monospace;font-size:.82rem;color:var(--primary)}
+        .lb-date{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--text-muted)}
+        .lb-empty{text-align:center;color:var(--text-muted);font-size:.85rem;padding:20px;font-style:italic}
+        .medal{font-size:1.1rem}
+
+        /* Save name */
+        .name-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+        .name-input{flex:1;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none;min-width:120px}
+        .name-input:focus{border-color:var(--primary)}
+
+        /* Game 2 — Code Quiz */
+        .code-q{background:#0d0d14;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:14px 18px;font-family:'Space Mono',monospace;font-size:.82rem;color:#f8f8f2;margin-bottom:16px;white-space:pre;overflow-x:auto;line-height:1.7}
+        .cq-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+        @media(max-width:500px){.cq-options{grid-template-columns:1fr}}
+        .cq-opt{padding:11px 14px;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;cursor:pointer;font-family:'Space Mono',monospace;font-size:.82rem;transition:all .25s;text-align:center}
+        .cq-opt:hover{border-color:var(--primary);background:rgba(124,106,247,.08)}
+        .cq-opt.correct{border-color:#4af7b0!important;background:rgba(74,247,176,.1)!important;color:#4af7b0}
+        .cq-opt.wrong{border-color:#f74a6a!important;background:rgba(247,74,106,.08)!important;color:#f74a6a}
+        .cq-opt.reveal{border-color:rgba(74,247,176,.5)!important;background:rgba(74,247,176,.05)!important}
+        .time-bar{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;margin-bottom:14px}
+        .time-fill{height:100%;background:linear-gradient(90deg,#4af7b0,var(--primary));border-radius:3px;transition:width .1s linear}
+        .streak-display{font-family:'Space Mono',monospace;font-size:.72rem;color:var(--accent);text-align:center;margin-bottom:8px}
+
+        /* Game 3 — Hangman/Word */
+        .word-display{display:flex;justify-content:center;gap:8px;margin:20px 0;flex-wrap:wrap}
+        .letter-box{width:38px;height:48px;border-bottom:3px solid var(--primary);display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;font-family:'Unbounded',sans-serif;font-size:1.2rem;font-weight:900;color:var(--text);transition:all .3s;position:relative}
+        .letter-box.wrong{border-color:#f74a6a;color:#f74a6a;animation:shake .3s}
+        .letter-box.hint-l{border-color:rgba(74,247,176,.5)}
+        @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+        .keyboard{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:16px 0}
+        .kb-btn{width:36px;height:36px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-family:'Space Mono',monospace;font-size:.8rem;font-weight:700;color:var(--text);transition:all .2s}
+        .kb-btn:hover{border-color:var(--primary);color:var(--primary)}
+        .kb-btn.used-c{background:rgba(74,247,176,.15);border-color:#4af7b0;color:#4af7b0;cursor:default}
+        .kb-btn.used-w{background:rgba(100,100,120,.15);border-color:rgba(100,100,120,.3);color:var(--text-muted);cursor:default;opacity:.5}
+        .word-hint-text{text-align:center;color:var(--text-muted);font-size:.85rem;margin-bottom:10px;font-style:italic}
+        .life-display{display:flex;justify-content:center;gap:6px;font-size:1.4rem;margin:10px 0}
+    </style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<nav class="navbar">
+    <a href="index.html" class="nav-logo">🐍 PyLearn KZ</a>
+    <div class="nav-links">
+        <a href="index.html" class="nav-link">Басты бет</a>
+        <a href="game.html" class="nav-link active">Ойындар</a>
+        <a href="chatbot.html" class="nav-link highlight">🤖 AI Чат</a>
+    </div>
+    <div class="nav-right">
+        <button class="dark-mode-toggle" id="dmt"><span id="mi">☀️</span></button>
+        <button class="hamburger" onclick="document.getElementById('mm').classList.toggle('open')">☰</button>
+    </div>
+</nav>
+<div class="mobile-menu" id="mm">
+    <a href="index.html" class="nav-link">Басты бет</a>
+    <a href="game.html" class="nav-link active">Ойындар</a>
+</div>
+
+<header>
+    <div class="header-badge">● 3 Ойын · Топ-3 кесте</div>
+    <h1>Python Ойындары</h1>
+    <p>Ойна, үйрен, рекорд қой!</p>
+</header>
+
+<div class="container">
+
+<!-- TABS -->
+<div class="games-tabs">
+    <button class="gtab active" onclick="switchGame(0,this)">🎯 Санды тап</button>
+    <button class="gtab" onclick="switchGame(1,this)">⚡ Код викторина</button>
+    <button class="gtab" onclick="switchGame(2,this)">🔤 Сөз табу</button>
+</div>
+
+<!-- ===================== GAME 1: GUESS NUMBER ===================== -->
+<div class="game-panel active" id="gpanel0">
+<div class="game-area">
+    <div class="game-title">🎯 Санды тап</div>
+    <div class="game-desc">1-ден 100-ге дейінгі жасырын санды тап. Жылдам тапсаң — жоғары ұпай!</div>
+    <div class="name-row">
+        <input type="text" class="name-input" id="g1name" placeholder="Атыңыз..." maxlength="16">
+    </div>
+    <div class="game-meta">
+        <div class="gstat"><div class="gstat-val" id="g1attempts">0</div><div class="gstat-label">Қадам</div></div>
+        <div class="gstat"><div class="gstat-val" id="g1best">—</div><div class="gstat-label">Рекорд</div></div>
+        <div class="gstat"><div class="gstat-val" id="g1score">0</div><div class="gstat-label">Ұпай</div></div>
+    </div>
+    <div class="hint-bar"><div class="hint-fill" id="g1hintBar" style="width:50%;background:var(--primary)"></div></div>
+    <div class="game-input-row">
+        <input type="number" class="game-input" id="g1input" placeholder="1 — 100" min="1" max="100" onkeydown="if(event.key==='Enter')g1guess()">
+        <button class="game-btn" onclick="g1guess()">Болжа!</button>
+        <button class="game-btn secondary" onclick="g1new()">Жаңа</button>
+    </div>
+    <div class="game-msg" id="g1msg"></div>
+    <div class="history-list" id="g1hist"></div>
+</div>
+<div class="leaderboard">
+    <div class="lb-title">🏆 Топ-3: Санды тап <button onclick="clearLB('g1')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.7rem">🗑</button></div>
+    <div id="lb1"></div>
+</div>
+</div>
+
+<!-- ===================== GAME 2: CODE QUIZ ===================== -->
+<div class="game-panel" id="gpanel1">
+<div class="game-area">
+    <div class="game-title">⚡ Код Викторина</div>
+    <div class="game-desc">Python кодын оқып, дұрыс жауапты таңда. Жылдам жауап берсең — қосымша ұпай!</div>
+    <div class="name-row">
+        <input type="text" class="name-input" id="g2name" placeholder="Атыңыз..." maxlength="16">
+    </div>
+    <div class="game-meta">
+        <div class="gstat"><div class="gstat-val" id="g2q">1</div><div class="gstat-label">Сұрақ</div></div>
+        <div class="gstat"><div class="gstat-val" id="g2score">0</div><div class="gstat-label">Ұпай</div></div>
+        <div class="gstat"><div class="gstat-val" id="g2streak">0</div><div class="gstat-label">🔥 Тізбек</div></div>
+        <div class="gstat"><div class="gstat-val" id="g2timer">15</div><div class="gstat-label">Секунд</div></div>
+    </div>
+    <div class="streak-display" id="g2streakMsg"></div>
+    <div class="time-bar"><div class="time-fill" id="g2timeFill" style="width:100%"></div></div>
+    <div class="code-q" id="g2code"></div>
+    <div class="cq-options" id="g2opts"></div>
+    <div class="game-msg" id="g2msg"></div>
+    <button class="game-btn" id="g2nextBtn" onclick="g2next()" style="display:none;width:100%">Келесі сұрақ →</button>
+    <button class="game-btn secondary" onclick="g2start()" id="g2startBtn" style="width:100%">🚀 Ойынды бастау</button>
+</div>
+<div class="leaderboard">
+    <div class="lb-title">🏆 Топ-3: Код Викторина <button onclick="clearLB('g2')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.7rem">🗑</button></div>
+    <div id="lb2"></div>
+</div>
+</div>
+
+<!-- ===================== GAME 3: WORD GUESS ===================== -->
+<div class="game-panel" id="gpanel2">
+<div class="game-area">
+    <div class="game-title">🔤 Python сөзін тап</div>
+    <div class="game-desc">Жасырын Python терминін әріптерді басу арқылы тап. 6 қате жасасаң — жеңіледің!</div>
+    <div class="name-row">
+        <input type="text" class="name-input" id="g3name" placeholder="Атыңыз..." maxlength="16">
+    </div>
+    <div class="game-meta">
+        <div class="gstat"><div class="gstat-val" id="g3wins">0</div><div class="gstat-label">Жеңіс</div></div>
+        <div class="gstat"><div class="gstat-val" id="g3score">0</div><div class="gstat-label">Ұпай</div></div>
+        <div class="gstat"><div class="gstat-val" id="g3words">0</div><div class="gstat-label">Сөз</div></div>
+    </div>
+    <div class="life-display" id="g3lives">❤️❤️❤️❤️❤️❤️</div>
+    <div class="word-hint-text" id="g3hint">Сұрақ таңдалуда...</div>
+    <div class="word-display" id="g3word"></div>
+    <div class="keyboard" id="g3kb"></div>
+    <div class="game-msg" id="g3msg"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:12px">
+        <button class="game-btn" onclick="g3new()">Жаңа сөз</button>
+        <button class="game-btn secondary" onclick="g3hint()">💡 Кеңес (-10 ұпай)</button>
+    </div>
+</div>
+<div class="leaderboard">
+    <div class="lb-title">🏆 Топ-3: Python сөзін тап <button onclick="clearLB('g3')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.7rem">🗑</button></div>
+    <div id="lb3"></div>
+</div>
+</div>
+
+<div style="text-align:center;margin-top:28px">
+    <a href="index.html" class="back-btn">← Басты бет</a>
+</div>
+</div>
+
+<script>
+// ============ STORAGE ============
+async function lbGet(key){
+    try{const r=await window.storage.get(key,true);return r?JSON.parse(r.value):[];}
+    catch(e){return[];}
+}
+async function lbSet(key,arr){
+    try{await window.storage.set(key,JSON.stringify(arr),true);}
+    catch(e){/* fallback to localStorage */try{localStorage.setItem(key,JSON.stringify(arr));}catch(e2){}}
+}
+async function lbGetFallback(key){
+    let arr=await lbGet(key);
+    if(!arr.length){try{const s=localStorage.getItem(key);if(s)arr=JSON.parse(s);}catch(e){}}
+    return arr;
+}
+
+async function addToLB(key,name,score,extra){
+    if(!name||!name.trim())return;
+    const arr=await lbGetFallback(key);
+    arr.push({name:name.trim().substring(0,14),score,extra,date:new Date().toLocaleDateString('kk-KZ')});
+    arr.sort((a,b)=>b.score-a.score);
+    const top3=arr.slice(0,3);
+    await lbSet(key,top3);
+    renderLB(key);
+}
+
+async function renderLB(key){
+    const el=document.getElementById({lb_g1:'lb1',lb_g2:'lb2',lb_g3:'lb3'}[key]);
+    if(!el)return;
+    const arr=await lbGetFallback(key);
+    if(!arr.length){el.innerHTML='<div class="lb-empty">Әзірге жазба жоқ. Ойнап, рекорд қой!</div>';return;}
+    const medals=['🥇','🥈','🥉'];
+    el.innerHTML=arr.map((e,i)=>`
+    <div class="lb-row">
+        <div class="lb-rank lb-rank-${i+1}">${medals[i]}</div>
+        <div class="lb-name">${esc(e.name)}</div>
+        <div>
+            <div class="lb-score">${e.score} ұпай${e.extra?' · '+e.extra:''}</div>
+            <div class="lb-date">${e.date}</div>
+        </div>
+    </div>`).join('');
+}
+
+async function clearLB(g){
+    const key={g1:'lb_g1',g2:'lb_g2',g3:'lb_g3'}[g];
+    await lbSet(key,[]);
+    renderLB(key);
+}
+
+// ============ TABS ============
+function switchGame(i,btn){
+    document.querySelectorAll('.game-panel').forEach((p,pi)=>p.classList.toggle('active',pi===i));
+    document.querySelectorAll('.gtab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+}
+
+// ============ GAME 1: GUESS NUMBER ============
+let g1secret,g1att,g1active=false,g1startTime;
+
+function g1new(){
+    g1secret=Math.floor(Math.random()*100)+1;
+    g1att=0;g1active=true;g1startTime=Date.now();
+    document.getElementById('g1attempts').textContent='0';
+    document.getElementById('g1score').textContent='0';
+    document.getElementById('g1input').value='';
+    document.getElementById('g1hist').innerHTML='';
+    showMsg('g1msg','','');
+    setBar('g1hintBar',50,'var(--primary)');
+    document.getElementById('g1input').focus();
+}
+
+function g1guess(){
+    if(!g1active){g1new();return;}
+    const v=parseInt(document.getElementById('g1input').value);
+    if(isNaN(v)||v<1||v>100){showMsg('g1msg','1-ден 100-ге дейін сан енгізіңіз!','msg-hint');return;}
+    g1att++;
+    document.getElementById('g1attempts').textContent=g1att;
+    document.getElementById('g1input').value='';
+
+    const diff=Math.abs(g1secret-v);
+    const hot=diff<=5;
+    addHist('g1hist',v,hot?'hot':'cold');
+
+    if(v===g1secret){
+        const sec=Math.round((Date.now()-g1startTime)/1000);
+        const pts=Math.max(100-g1att*8-Math.floor(sec/5),10);
+        document.getElementById('g1score').textContent=pts;
+        showMsg('g1msg',`🎉 Дұрыс! ${g1secret} — ${g1att} қадамда таптың! ${pts} ұпай! (${sec} сек)`,'msg-win');
+        setBar('g1hintBar',100,'#4af7b0');
+        g1active=false;
+        const cur=document.getElementById('g1best').textContent;
+        if(cur==='—'||pts>parseInt(cur)) document.getElementById('g1best').textContent=pts;
+        addToLB('lb_g1',document.getElementById('g1name').value,pts,`${g1att} қадам`);
+    } else if(v<g1secret){
+        const p=Math.round((v/100)*100);
+        setBar('g1hintBar',p,'var(--primary)');
+        const d=diff<=5?'🔥 Өте жақын!':diff<=15?'🌡 Жылы':diff<=30?'🌊 Суық':'❄️ Өте суық';
+        showMsg('g1msg',`↑ Үлкенірек! ${d}`,'msg-hint');
+    } else {
+        const p=Math.round((v/100)*100);
+        setBar('g1hintBar',p,'#f74a6a');
+        const d=diff<=5?'🔥 Өте жақын!':diff<=15?'🌡 Жылы':diff<=30?'🌊 Суық':'❄️ Өте суық';
+        showMsg('g1msg',`↓ Кішірек! ${d}`,'msg-hint');
+    }
+}
+
+function addHist(id,v,cls){
+    const h=document.getElementById(id);
+    const s=document.createElement('span');
+    s.className='hist-item '+(cls||'');
+    s.textContent=v;
+    h.appendChild(s);
+}
+
+function setBar(id,pct,color){
+    const el=document.getElementById(id);
+    el.style.width=pct+'%';
+    el.style.background=color;
+}
+
+// ============ GAME 2: CODE QUIZ ============
+const CQ=[
+    {code:`x = 5\nprint(x * 2)`,opts:['5','10','25','52'],ans:1,exp:'5 * 2 = 10'},
+    {code:`for i in range(3):\n    print(i)`,opts:['0,1,2','1,2,3','0,1,2,3','1,2'],ans:0,exp:'range(3) → 0,1,2'},
+    {code:`аты = "Python"\nprint(len(аты))`,opts:['5','6','7','4'],ans:1,exp:'"Python" = 6 символ'},
+    {code:`x = 10\nif x > 5:\n    print("Үлкен")`,opts:['Ештеңе','Үлкен','5','True'],ans:1,exp:'10 > 5 = True, Үлкен шығады'},
+    {code:`print(10 % 3)`,opts:['3','0','1','3.33'],ans:2,exp:'10 ÷ 3 = 3 қалдық 1'},
+    {code:`тізім = [1,2,3]\nтізім.append(4)\nprint(len(тізім))`,opts:['3','4','5','Қате'],ans:1,exp:'append(4) тізімге 4 қосады, ұзындық 4'},
+    {code:`x = True\nprint(not x)`,opts:['True','False','None','Error'],ans:1,exp:'not True = False'},
+    {code:`print(2 ** 8)`,opts:['16','256','64','128'],ans:1,exp:'2^8 = 256'},
+    {code:`x = "Сәлем"\nprint(x[0])`,opts:['С','ә','С','Error'],ans:0,exp:'Индекс 0 = бірінші символ "С"'},
+    {code:`def f(a,b):\n    return a+b\nprint(f(3,7))`,opts:['37','3+7','10','Error'],ans:2,exp:'3+7=10 қайтарады'},
+    {code:`for i in range(1,6,2):\n    print(i)`,opts:['1,2,3,4,5','1,3,5','2,4','1,3,5,7'],ans:1,exp:'range(1,6,2): 1,3,5 (қадам 2)'},
+    {code:`x = 15\ny = 4\nprint(x//y)`,opts:['3','3.75','4','3.0'],ans:0,exp:'15//4 = 3 (бүтін бөлу)'},
+    {code:`print(bool(0))`,opts:['0','True','False','None'],ans:2,exp:'0 саны False-қа баламалы'},
+    {code:`s = "hello"\nprint(s.upper())`,opts:['hello','HELLO','Hello','ERROR'],ans:1,exp:'.upper() барлық әріпті бас әріпке айналдырады'},
+    {code:`тізім = [5,3,8,1]\nprint(max(тізім))`,opts:['5','1','8','3'],ans:2,exp:'max() ең үлкен элементті табады: 8'},
+];
+let g2cur=0,g2score=0,g2streak=0,g2timer=null,g2timeLeft=15,g2active=false,g2questions=[];
+
+function g2start(){
+    g2questions=[...CQ].sort(()=>Math.random()-.5);
+    g2cur=0;g2score=0;g2streak=0;g2active=true;
+    document.getElementById('g2startBtn').style.display='none';
+    document.getElementById('g2score').textContent='0';
+    document.getElementById('g2streak').textContent='0';
+    showMsg('g2msg','','');
+    g2show();
+}
+
+function g2show(){
+    if(g2cur>=g2questions.length){g2finish();return;}
+    const q=g2questions[g2cur];
+    document.getElementById('g2q').textContent=g2cur+1;
+    document.getElementById('g2code').textContent=q.code;
+    const opts=document.getElementById('g2opts');
+    opts.innerHTML=q.opts.map((o,i)=>`<div class="cq-opt" id="cqopt${i}" onclick="g2choose(${i})">${esc(o)}</div>`).join('');
+    document.getElementById('g2nextBtn').style.display='none';
+    showMsg('g2msg','','');
+    g2streakMsg();
+    clearInterval(g2timer);
+    g2timeLeft=15;
+    updateTimeFill(15,15);
+    g2timer=setInterval(()=>{
+        g2timeLeft--;
+        document.getElementById('g2timer').textContent=g2timeLeft;
+        updateTimeFill(g2timeLeft,15);
+        if(g2timeLeft<=0){clearInterval(g2timer);g2timeExpired();}
+    },1000);
+}
+
+function g2choose(i){
+    if(!g2active)return;
+    clearInterval(g2timer);
+    const q=g2questions[g2cur];
+    for(let j=0;j<q.opts.length;j++) document.getElementById('cqopt'+j).onclick=null;
+    if(i===q.ans){
+        document.getElementById('cqopt'+i).classList.add('correct');
+        g2streak++;
+        const bonus=Math.min(g2streak,5)*2;
+        const timePts=Math.round(g2timeLeft/15*20);
+        const pts=10+timePts+bonus;
+        g2score+=pts;
+        document.getElementById('g2score').textContent=g2score;
+        document.getElementById('g2streak').textContent=g2streak;
+        showMsg('g2msg',`✓ Дұрыс! +${pts} ұпай (уақыт +${timePts}, тізбек +${bonus}). ${q.exp}`,'msg-win');
+    } else {
+        document.getElementById('cqopt'+i).classList.add('wrong');
+        document.getElementById('cqopt'+q.ans).classList.add('reveal');
+        g2streak=0;
+        document.getElementById('g2streak').textContent='0';
+        showMsg('g2msg',`✗ Қате. Дұрыс: ${q.opts[q.ans]}. ${q.exp}`,'msg-lose');
+    }
+    g2streakMsg();
+    document.getElementById('g2nextBtn').style.display='block';
+}
+
+function g2timeExpired(){
+    const q=g2questions[g2cur];
+    for(let j=0;j<q.opts.length;j++) document.getElementById('cqopt'+j).onclick=null;
+    document.getElementById('cqopt'+q.ans).classList.add('reveal');
+    g2streak=0;
+    document.getElementById('g2streak').textContent='0';
+    showMsg('g2msg',`⏱ Уақыт аяқталды! Дұрыс: ${q.opts[q.ans]}`,'msg-info');
+    g2streakMsg();
+    document.getElementById('g2nextBtn').style.display='block';
+}
+
+function g2next(){g2cur++;g2show();}
+
+function g2finish(){
+    g2active=false;
+    document.getElementById('g2code').textContent='Ойын аяқталды!';
+    document.getElementById('g2opts').innerHTML='';
+    document.getElementById('g2nextBtn').style.display='none';
+    document.getElementById('g2startBtn').style.display='block';
+    document.getElementById('g2startBtn').textContent='↺ Қайтадан ойна';
+    showMsg('g2msg',`🏁 Ойын аяқталды! Жалпы ұпай: ${g2score}`,'msg-win');
+    addToLB('lb_g2',document.getElementById('g2name').value,g2score,`${g2questions.length} сұрақ`);
+}
+
+function updateTimeFill(cur,max){
+    const pct=cur/max*100;
+    const el=document.getElementById('g2timeFill');
+    el.style.width=pct+'%';
+    el.style.background=pct>50?'linear-gradient(90deg,#4af7b0,var(--primary))':'linear-gradient(90deg,#f7c948,#f74a6a)';
+    document.getElementById('g2timer').textContent=cur;
+}
+
+function g2streakMsg(){
+    const s=document.getElementById('g2streakMsg');
+    s.textContent=g2streak>=5?`🔥🔥🔥 ${g2streak} тізбек! Жарайсың!`:g2streak>=3?`🔥 ${g2streak} тізбек!`:g2streak>0?`⚡ ${g2streak} тізбек`:'';
+}
+
+// ============ GAME 3: WORD GUESS ============
+const WORDS=[
+    {word:'PYTHON',hint:'Бағдарламалау тілінің аты'},
+    {word:'PRINT',hint:'Экранға шығаратын функция'},
+    {word:'INPUT',hint:'Пайдаланушыдан мәлімет алатын функция'},
+    {word:'WHILE',hint:'Шарт негізінде қайталайтын цикл'},
+    {word:'RANGE',hint:'Сандар тізбегін жасайтын функция'},
+    {word:'RETURN',hint:'Функциядан мән қайтарады'},
+    {word:'IMPORT',hint:'Модульді жүктеу үшін қолданылады'},
+    {word:'DEFINE',hint:'Функцияны анықтайтын кілт сөздің мағынасы'},
+    {word:'STRING',hint:'Мәтін деректер типі'},
+    {word:'APPEND',hint:'Тізімге элемент қосады'},
+    {word:'INDENT',hint:'Блокты белгілейтін шегіністі'},
+    {word:'BREAK',hint:'Циклдан шыққызады'},
+    {word:'FALSE',hint:'Логикалық жалған мән'},
+    {word:'CLASS',hint:'Объектіге негізделген программалауда анықталады'},
+    {word:'FLOAT',hint:'Нақты сан деректер типі'},
+    {word:'LAMBDA',hint:'Атаусыз шағын функция'},
+    {word:'GLOBAL',hint:'Жаһандық айнымалыны белгілеу'},
+    {word:'SYNTAX',hint:'Тілдің жазылу ережесі'},
+    {word:'LOGIC',hint:'Шарттарды бағалайтын есептеулер'},
+    {word:'TUPLE',hint:'Өзгерімсіз тізім типі'},
+];
+let g3word='',g3guessed=[],g3wrong=[],g3lives=6,g3score=0,g3wins=0,g3wordCount=0;
+
+function g3new(){
+    const w=WORDS[Math.floor(Math.random()*WORDS.length)];
+    g3word=w.word;g3guessed=[];g3wrong=[];g3lives=6;
+    document.getElementById('g3hint').textContent='💡 '+w.hint;
+    g3wordCount++;
+    document.getElementById('g3words').textContent=g3wordCount;
+    renderWord();
+    renderKB();
+    renderLives();
+    showMsg('g3msg','','');
+}
+
+function renderWord(){
+    const el=document.getElementById('g3word');
+    el.innerHTML=g3word.split('').map(l=>`<div class="letter-box">${g3guessed.includes(l)?l:''}</div>`).join('');
+}
+
+function renderLives(){document.getElementById('g3lives').textContent='❤️'.repeat(g3lives)+'🖤'.repeat(6-g3lives);}
+
+function renderKB(){
+    const el=document.getElementById('g3kb');
+    el.innerHTML='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(l=>`<button class="kb-btn ${g3guessed.includes(l)?'used-c':g3wrong.includes(l)?'used-w':''}" onclick="g3guess('${l}')">${l}</button>`).join('');
+}
+
+function g3guess(l){
+    if(g3guessed.includes(l)||g3wrong.includes(l)||g3lives<=0)return;
+    if(g3word.includes(l)){
+        g3guessed.push(l);
+        renderWord();
+        if(g3word.split('').every(c=>g3guessed.includes(c))){
+            const pts=g3lives*10+20;
+            g3score+=pts;g3wins++;
+            document.getElementById('g3score').textContent=g3score;
+            document.getElementById('g3wins').textContent=g3wins;
+            showMsg('g3msg',`🎉 Дұрыс! "${g3word}" — +${pts} ұпай!`,'msg-win');
+            addToLB('lb_g3',document.getElementById('g3name').value,g3score,`${g3wins} жеңіс`);
+        }
+    } else {
+        g3wrong.push(l);g3lives--;
+        renderLives();
+        if(g3lives===0){showMsg('g3msg',`😞 Жеңілдің! Жасырын сөз: "${g3word}"`,'msg-lose');}
+    }
+    renderKB();
+}
+
+function g3hint(){
+    const unknown=g3word.split('').filter(l=>!g3guessed.includes(l));
+    if(!unknown.length||g3lives<=0)return;
+    const l=unknown[Math.floor(Math.random()*unknown.length)];
+    g3guessed.push(l);
+    g3score=Math.max(0,g3score-10);
+    document.getElementById('g3score').textContent=g3score;
+    renderWord();renderKB();
+}
+
+// ============ HELPERS ============
+function showMsg(id,text,cls){
+    const el=document.getElementById(id);
+    el.textContent=text;
+    el.className='game-msg '+(text?'show ':'')+cls;
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ============ INIT ============
+g1new();
+g2questions=[...CQ].sort(()=>Math.random()-.5);
+g2show();
+g3new();
+renderLB('lb_g1');renderLB('lb_g2');renderLB('lb_g3');
+
+// Extend renderLB for all keys
+async function renderLB(key){
+    const map={lb_g1:'lb1',lb_g2:'lb2',lb_g3:'lb3'};
+    const el=document.getElementById(map[key]);
+    if(!el)return;
+    const arr=await lbGetFallback(key);
+    if(!arr.length){el.innerHTML='<div class="lb-empty">Әзірге жазба жоқ. Ойнап, рекорд қой!</div>';return;}
+    const medals=['🥇','🥈','🥉'];
+    el.innerHTML=arr.map((e,i)=>`
+    <div class="lb-row">
+        <div class="lb-rank lb-rank-${i+1}">${medals[i]}</div>
+        <div class="lb-name">${esc(e.name)}</div>
+        <div>
+            <div class="lb-score">${e.score} ұпай${e.extra?' · '+e.extra:''}</div>
+            <div class="lb-date">${e.date||''}</div>
+        </div>
+    </div>`).join('');
+}
+
+['lb_g1','lb_g2','lb_g3'].forEach(k=>renderLB(k));
+
+// dark mode
+const dmt=document.getElementById('dmt'),mi=document.getElementById('mi'),body=document.body;
+if(localStorage.getItem('dark-mode')!=='disabled'){mi.textContent='☀️';}
+else{body.classList.add('light-mode');mi.textContent='🌙';}
+dmt.addEventListener('click',()=>{
+    body.classList.toggle('light-mode');
+    if(body.classList.contains('light-mode')){localStorage.setItem('dark-mode','disabled');mi.textContent='🌙';}
+    else{localStorage.setItem('dark-mode','enabled');mi.textContent='☀️';}
+});
+window.addEventListener('scroll',()=>{
+    const s=(window.scrollY/(document.body.scrollHeight-window.innerHeight))*100;
+    document.getElementById('progressBar').style.width=(s||0)+'%';
+});
+</script>
+<script src="accessibility.js"></script>
+</body>
+</html>
